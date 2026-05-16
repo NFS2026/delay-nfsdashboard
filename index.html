@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NFS Disruption Tracker</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#080C16}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:#FFFFFF;min-height:100vh;-webkit-tap-highlight-color:transparent;max-width:480px;margin:0 auto;font-size:16px}
+select,input,textarea{font-family:inherit;-webkit-appearance:none;color:#FFFFFF}
+input[type=datetime-local]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:0.7;cursor:pointer}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+option{background:#0F1828;color:#FFFFFF}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:#2A3A50;border-radius:2px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#F5A623!important;box-shadow:0 0 0 3px rgba(245,166,35,0.25)!important}
+button:active{transform:scale(0.96)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes checkPop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade{animation:fadeUp 0.25s ease forwards}
+.card{background:#0F1828;border:1px solid #1E2E44;border-radius:12px;padding:14px 16px}
+.field-inp{width:100%;background:#060B14;border:1.5px solid #1E2E44;border-radius:10px;padding:14px 16px;color:#FFFFFF;font-size:16px;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box;min-height:52px}
+.field-inp.err{border-color:#FF1744!important;background:#160006}
+.field-inp-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23546580' strokeWidth='2' fill='none' strokeLinecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:44px;appearance:none;cursor:pointer}
+textarea.field-inp{resize:vertical;min-height:100px}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+.photo-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:2px solid #1E2E44;cursor:pointer;display:block}
+.photo-btn{flex:1;border:2px dashed #2A3D56;border-radius:12px;background:#0A1220;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#546580;font-size:12px;gap:6px;padding:18px 8px;transition:all 0.2s;font-family:inherit;min-height:90px}
+.photo-btn:hover,.photo-btn:active{border-color:#F5A623;color:#F5A623;background:#120E00}
+.photo-btn .ico{font-size:28px;line-height:1}
+.list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#0A1220;border:1px solid #1E2E44;border-radius:8px;margin-bottom:6px;font-size:14px;color:#CBD5E1}
+.list-item button{background:none;border:none;color:#546580;cursor:pointer;font-size:18px;padding:0 4px;line-height:1;flex-shrink:0}
+.list-item button:hover{color:#FF1744}
+.add-row{display:flex;gap:8px;margin-top:10px}
+.add-row input{flex:1;background:#060B14;border:1.5px solid #1E2E44;border-radius:8px;padding:12px 14px;font-size:14px;color:#FFFFFF;font-family:inherit;min-height:48px}
+.add-row input:focus{outline:none;border-color:#F5A623;box-shadow:0 0 0 3px rgba(245,166,35,0.2)}
+.add-row button{background:#F5A623;color:#000;border:none;border-radius:8px;padding:12px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;min-height:48px}
+.offline-bar{background:#FF1744;color:#fff;font-size:12px;font-weight:600;text-align:center;padding:6px;letter-spacing:0.5px}
+.spinner{width:20px;height:20px;border:2px solid #1E2E44;border-top-color:#F5A623;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const {useState,useEffect,useRef}=React;
+
+// ── FIREBASE CONFIG ───────────────────────────────────────────────────
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyDHLvTmc6RKbJRyPf7qteGrxiGK0S-VimU",
+  authDomain:"nfs-disruptions.firebaseapp.com",
+  projectId:"nfs-disruptions",
+  storageBucket:"nfs-disruptions.firebasestorage.app",
+  messagingSenderId:"900994852867",
+  appId:"1:900994852867:web:90b6ef3f052029227a4636"
+};
+
+const PROJECT_NAME="NFS Project";
+const MAX_PHOTOS=3;
+const PHOTO_MAX_PX=640;
+const BOOTSTRAP_ADMIN="nfs2026@gmail.com"; // first admin always has access
+
+// ── FIREBASE INIT ─────────────────────────────────────────────────────
+let db=null,auth=null;
+try{
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db=firebase.firestore();
+  auth=firebase.auth();
+  db.enablePersistence({synchronizeTabs:true}).catch(function(e){
+    if(e.code!=="unimplemented")console.warn("Persistence:",e.code);
+  });
+}catch(e){console.error("Firebase init:",e);}
+
+// ── DEFAULT LISTS ─────────────────────────────────────────────────────
+const DEFAULT_AREAS=[
+  "Train 1 - Process Area","Train 2 - Process Area","Train 3 - Process Area",
+  "Utilities Area","Offsites & Storage","Marine / Jetty Facilities",
+  "Pipeline Right-of-Way","Acid Gas Removal Unit (AGRU)","Fractionation Unit",
+  "Central Control Room (CCR)","Fabrication Yard","Laydown Area",
+  "Accommodation Camp","Site Access / Main Gate","Other"
+];
+const DEFAULT_DISCIPLINES=[
+  "Civil & Structural","Mechanical","Electrical","Instrumentation & Control",
+  "Piping","Process Engineering","HSE / Safety","Commissioning & Start-up",
+  "Marine & Offshore","Scaffolding","Insulation & Painting","Rigging & Lifting",
+  "Welding & NDT","HVAC","Subsea","Other"
+];
+const DEFAULT_TYPES=[
+  "Equipment Failure / Breakdown","Safety Incident / Near Miss","Weather Delay",
+  "Manpower Shortage","Material / Equipment Delivery Delay","Permit Delay (PTW)",
+  "HSE Non-Conformance","Engineering / Design Issue","Interface / Coordination Issue",
+  "Third Party Interference","Access Restriction","Quality Issue",
+  "Environmental Issue","Process Upset","Other"
+];
+const SEVERITIES=["Low","Medium","High","Critical"];
+const SEV={
+  Low:     {c:"#00E676",bg:"rgba(0,230,118,0.12)", bd:"rgba(0,230,118,0.35)"},
+  Medium:  {c:"#FFD600",bg:"rgba(255,214,0,0.12)", bd:"rgba(255,214,0,0.35)"},
+  High:    {c:"#FF6E40",bg:"rgba(255,110,64,0.12)", bd:"rgba(255,110,64,0.35)"},
+  Critical:{c:"#FF1744",bg:"rgba(255,23,68,0.15)",  bd:"rgba(255,23,68,0.5)"},
+};
+const STA={
+  "Open":        {c:"#FFD600",bg:"rgba(255,214,0,0.1)",   bd:"rgba(255,214,0,0.3)"},
+  "In Progress": {c:"#40C4FF",bg:"rgba(64,196,255,0.1)",  bd:"rgba(64,196,255,0.3)"},
+  "Resolved":    {c:"#00E676",bg:"rgba(0,230,118,0.1)",   bd:"rgba(0,230,118,0.3)"},
+};
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmtDate(ts){return new Date(ts).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+function fmtInc(dt){if(!dt)return"—";try{return new Date(dt).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}catch(e){return dt;}}
+function timeAgo(ts){var d=Date.now()-ts,m=Math.floor(d/60000);if(m<1)return"Just now";if(m<60)return m+"m ago";var h=Math.floor(m/60);if(h<24)return h+"h ago";return Math.floor(h/24)+"d ago";}
+function nowLocal(){return new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);}
+
+function compressImage(file,cb){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var max=PHOTO_MAX_PX,w=img.width,h=img.height;
+      if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+      var canvas=document.createElement("canvas");
+      canvas.width=w;canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL("image/jpeg",0.60));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function uploadPhoto(b64){return Promise.resolve(b64);}
+
+function exportCSV(data){
+  var h=["Ref","Badge","Name","Discipline","Area","Type","Severity","Incident Date","Description","Duration (hrs)","Crew Affected","Equipment","Impact","Action","Photos","Status","Submitted"];
+  var rows=data.map(function(d){
+    return[d.id,d.badge,'"'+d.name+'"','"'+d.discipline+'"','"'+d.area+'"','"'+d.type+'"',d.severity,'"'+fmtInc(d.incidentDate)+'"','"'+(d.description||"").replace(/"/g,'""')+'"',d.duration||"",d.crew||"",'"'+(d.equipment||"").replace(/"/g,'""')+'"','"'+(d.impact||"").replace(/"/g,'""')+'"','"'+(d.action||"").replace(/"/g,'""')+'"',(d.photos||[]).length+" photo(s)",d.status,fmtDate(d.timestamp)];
+  });
+  var csv=[h,...rows].map(function(r){return r.join(",");}).join("\n");
+  var blob=new Blob([csv],{type:"text/csv"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="NFS_Disruptions_"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(url);
+}
+
+// ── ATOMS ─────────────────────────────────────────────────────────────
+function Pill(p){
+  return React.createElement("span",{style:{background:p.bg,color:p.c,border:"1px solid "+(p.bd||p.c),borderRadius:5,padding:"3px 10px",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,whiteSpace:"nowrap",flexShrink:0}},p.label);
+}
+function Hdr(p){
+  return React.createElement("div",{style:{background:"#0D1524",borderBottom:"1px solid #1E2E44",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,minHeight:60,boxShadow:"0 2px 8px rgba(0,0,0,0.5)"}},
+    React.createElement("div",{style:{display:"flex",alignItems:"center",gap:12}},
+      p.onBack&&React.createElement("button",{style:{background:"transparent",border:"none",color:"#8899AA",fontSize:24,cursor:"pointer",lineHeight:1,padding:"0 8px 0 0",fontFamily:"inherit"},onClick:p.onBack},"\u2190"),
+      React.createElement("div",{style:{width:36,height:36,background:p.accent||"#F5A623",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}},"\u26a1"),
+      React.createElement("div",null,
+        React.createElement("div",{style:{fontSize:15,fontWeight:700,color:"#FFFFFF",letterSpacing:0.3}},p.title),
+        React.createElement("div",{style:{fontSize:10,color:"#546580",letterSpacing:1,textTransform:"uppercase",marginTop:2}},p.sub)
+      )
+    ),
+    p.right&&React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},p.right)
+  );
+}
+function Lbl(p){
+  return React.createElement("div",{style:{marginBottom:20}},
+    React.createElement("label",{style:{display:"block",fontSize:12,color:p.err?"#FF1744":"#7A8FA6",marginBottom:8,textTransform:"uppercase",letterSpacing:1,fontWeight:600}},p.label+(p.req?" *":"")),
+    p.children,
+    p.err&&React.createElement("div",{style:{fontSize:12,color:"#FF1744",marginTop:6,fontWeight:500}},"\u26a0 "+p.err)
+  );
+}
+function Lightbox(p){
+  if(!p.src)return null;
+  return React.createElement("div",{onClick:p.onClose,style:{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.95)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}},
+    React.createElement("img",{src:p.src,style:{maxWidth:"100%",maxHeight:"90vh",borderRadius:10},onClick:function(e){e.stopPropagation();}}),
+    React.createElement("button",{onClick:p.onClose,style:{position:"absolute",top:16,right:16,background:"rgba(255,255,255,0.1)",border:"2px solid rgba(255,255,255,0.2)",color:"#fff",width:44,height:44,borderRadius:"50%",fontSize:20,cursor:"pointer",lineHeight:"40px",textAlign:"center"}},"×")
+  );
+}
+function EditableList(p){
+  var [nv,setNv]=useState("");
+  function add(){var v=nv.trim();if(!v||p.items.indexOf(v)>=0)return;p.onChange([...p.items,v]);setNv("");}
+  function remove(i){p.onChange(p.items.filter(function(_,j){return j!==i;}));}
+  return React.createElement("div",null,
+    p.items.map(function(item,i){
+      return React.createElement("div",{key:i,className:"list-item"},
+        React.createElement("span",{style:{wordBreak:"break-all"}},item),
+        React.createElement("button",{onClick:function(){remove(i);}},"\u00d7")
+      );
+    }),
+    React.createElement("div",{className:"add-row"},
+      React.createElement("input",{value:nv,onChange:function(e){setNv(e.target.value);},onKeyDown:function(e){if(e.key==="Enter")add();},placeholder:"Add "+p.placeholder+"..."}),
+      React.createElement("button",{onClick:add},"\u002b Add")
+    )
+  );
+}
+
+// ── APP ───────────────────────────────────────────────────────────────
+function App(){
+  // Auth
+  var [authState,setAuthState]=useState("loading"); // loading|out|checking|admin|denied
+  var [currentUser,setCurrentUser]=useState(null);
+  // Data
+  var [view,setView]=useState("form");
+  var [dis,setDis]=useState([]);
+  var [loading,setLoading]=useState(true);
+  var [online,setOnline]=useState(navigator.onLine);
+  var [areas,setAreas]=useState(DEFAULT_AREAS);
+  var [disciplines,setDisc]=useState(DEFAULT_DISCIPLINES);
+  var [types,setTypes]=useState(DEFAULT_TYPES);
+  var [admins,setAdmins]=useState([BOOTSTRAP_ADMIN]);
+  // Form
+  function blankForm(){return{badge:"",name:"",discipline:"",area:"",type:"",severity:"",incidentDate:nowLocal(),description:"",duration:"",crew:"",equipment:"",impact:"",action:"",photos:[]};}
+  var [form,setForm]=useState(blankForm());
+  var [err,setErr]=useState({});
+  var [busy,setBusy]=useState(false);
+  var [uploadPct,setUploadPct]=useState(0);
+  // UI
+  var [tab,setTab]=useState("list");
+  var [did,setDid]=useState(null);
+  var [fsev,setFsev]=useState("All");
+  var [fsta,setFsta]=useState("All");
+  var [qr,setQr]=useState("");
+  var [cp,setCp]=useState(false);
+  var [lb,setLb]=useState(null);
+  var camRef=useRef(null);
+  var galRef=useRef(null);
+
+  // Online/offline
+  useEffect(function(){
+    function on(){setOnline(true);}
+    function off(){setOnline(false);}
+    window.addEventListener("online",on);
+    window.addEventListener("offline",off);
+    return function(){window.removeEventListener("online",on);window.removeEventListener("offline",off);};
+  },[]);
+
+  // Auth state listener
+  useEffect(function(){
+    if(!auth||!db)return;
+    var unsub=auth.onAuthStateChanged(function(user){
+      if(user){
+        setCurrentUser(user);
+        setAuthState("checking");
+        db.collection("settings").doc("admins").get().then(function(snap){
+          var emails=snap.exists?(snap.data().emails||[]):[BOOTSTRAP_ADMIN];
+          if(!snap.exists){db.collection("settings").doc("admins").set({emails:[BOOTSTRAP_ADMIN]});}
+          setAdmins(emails.includes(BOOTSTRAP_ADMIN)?emails:[BOOTSTRAP_ADMIN,...emails]);
+          var isAdmin=emails.includes(user.email)||user.email===BOOTSTRAP_ADMIN;
+          setAuthState(isAdmin?"admin":"denied");
+          if(isAdmin)setView("admin");
+        }).catch(function(){
+          setAuthState(user.email===BOOTSTRAP_ADMIN?"admin":"denied");
+          if(user.email===BOOTSTRAP_ADMIN)setView("admin");
+        });
+      }else{
+        setCurrentUser(null);
+        setAuthState("out");
+      }
+    });
+    return function(){unsub();};
+  },[]);
+
+  // Real-time disruptions (all users can see — auth is UI-only)
+  useEffect(function(){
+    if(!db)return;
+    var unsub=db.collection("disruptions").orderBy("timestamp","desc").onSnapshot(function(snap){
+      setDis(snap.docs.map(function(d){return{id:d.id,...d.data()};}));
+      setLoading(false);
+    },function(e){console.error(e);setLoading(false);});
+    return function(){unsub();};
+  },[]);
+
+  // Settings listeners
+  useEffect(function(){
+    if(!db)return;
+    function watch(docId,setter,def){
+      return db.collection("settings").doc(docId).onSnapshot(function(snap){
+        if(snap.exists&&snap.data().items){setter(snap.data().items);}
+        else{db.collection("settings").doc(docId).set({items:def});setter(def);}
+      });
+    }
+    var u1=watch("areas",setAreas,DEFAULT_AREAS);
+    var u2=watch("disciplines",setDisc,DEFAULT_DISCIPLINES);
+    var u3=watch("types",setTypes,DEFAULT_TYPES);
+    var u4=db.collection("settings").doc("admins").onSnapshot(function(snap){
+      if(snap.exists&&snap.data().emails){
+        var emails=snap.data().emails;
+        setAdmins(emails.includes(BOOTSTRAP_ADMIN)?emails:[BOOTSTRAP_ADMIN,...emails]);
+      }
+    });
+    return function(){u1();u2();u3();u4();};
+  },[]);
+
+  useEffect(function(){if(tab==="share")loadQR();},[tab]);
+
+  async function loadQR(){
+    try{var mod=await import("https://esm.sh/qrcode@1.5.3");var QR=mod.default||mod;var d=await QR.toDataURL(window.location.href,{width:230,margin:2,color:{dark:"#080C16",light:"#F0F4F8"}});setQr(d);}catch(e){}
+  }
+
+  // Sign in / out
+  async function signIn(){
+    try{
+      var provider=new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+    }catch(e){
+      if(e.code!=="auth/popup-closed-by-user")alert("Sign-in failed: "+e.message);
+    }
+  }
+  function doSignOut(){auth.signOut();setView("form");setTab("list");}
+
+  // Firestore saves
+  function saveSetting(docId,list){if(db)db.collection("settings").doc(docId).set({items:list});}
+  function saveAreas(l){setAreas(l);saveSetting("areas",l);}
+  function saveDisc(l){setDisc(l);saveSetting("disciplines",l);}
+  function saveTypes(l){setTypes(l);saveSetting("types",l);}
+  function saveAdmins(l){
+    var withBootstrap=l.includes(BOOTSTRAP_ADMIN)?l:[BOOTSTRAP_ADMIN,...l];
+    setAdmins(withBootstrap);
+    if(db)db.collection("settings").doc("admins").set({emails:withBootstrap});
+  }
+
+  // Form validation
+  function validate(){
+    var e={};
+    if(!form.badge.trim()||!/^\d+$/.test(form.badge.trim()))e.badge="Must be a valid numerical badge number";
+    if(!form.name.trim())e.name="Required";
+    if(!form.discipline)e.discipline="Required";
+    if(!form.area)e.area="Required";
+    if(!form.type)e.type="Required";
+    if(!form.severity)e.severity="Select a severity level";
+    if(!form.incidentDate)e.incidentDate="Required";
+    if(form.description.trim().length<10)e.description="Minimum 10 characters required";
+    if(form.duration&&isNaN(parseFloat(form.duration)))e.duration="Must be a number";
+    if(form.crew&&(isNaN(parseInt(form.crew))||parseInt(form.crew)<0))e.crew="Must be a whole number";
+    setErr(e);return!Object.keys(e).length;
+  }
+
+  // Photo handling
+  function handlePhotos(e){
+    var files=Array.from(e.target.files);
+    var rem=MAX_PHOTOS-(form.photos||[]).length;
+    files=files.slice(0,rem);
+    if(!files.length)return;
+    var loaded=0,newPh=[];
+    files.forEach(function(f){compressImage(f,function(b64){newPh.push(b64);loaded++;if(loaded===files.length)setForm(function(p){return{...p,photos:(p.photos||[]).concat(newPh)};});});});
+    e.target.value="";
+  }
+  function removePhoto(i){setForm(function(p){var ph=[...(p.photos||[])];ph.splice(i,1);return{...p,photos:ph};});}
+
+  // Submit disruption
+  async function submit(){
+    if(!validate()||busy)return;
+    setBusy(true);setUploadPct(0);
+    try{
+      var photoUrls=[];
+      var photos=form.photos||[];
+      for(var i=0;i<photos.length;i++){
+        setUploadPct(Math.round(((i+0.5)/Math.max(photos.length,1))*80));
+        photoUrls.push(await uploadPhoto(photos[i]));
+      }
+      setUploadPct(90);
+      await db.collection("disruptions").add({
+        badge:form.badge.trim(),name:form.name.trim(),
+        discipline:form.discipline,area:form.area,type:form.type,severity:form.severity,
+        incidentDate:form.incidentDate,description:form.description.trim(),
+        duration:form.duration?parseFloat(form.duration):"",
+        crew:form.crew?parseInt(form.crew):"",
+        equipment:form.equipment.trim(),
+        impact:form.impact.trim(),action:form.action.trim(),
+        photos:photoUrls,timestamp:Date.now(),status:"Open"
+      });
+      setUploadPct(100);
+      setForm(blankForm());setErr({});setBusy(false);setUploadPct(0);setView("success");
+    }catch(e){
+      alert("Submission failed: "+e.message);
+      setBusy(false);setUploadPct(0);
+    }
+  }
+
+  async function chgSta(id,s){
+    if(db)await db.collection("disruptions").doc(id).update({status:s,updatedAt:Date.now()});
+  }
+
+  // Derived
+  var detail=dis.find(function(d){return d.id===did;});
+  var filtered=dis.filter(function(d){return(fsev==="All"||d.severity===fsev)&&(fsta==="All"||d.status===fsta);});
+  var stats={total:dis.length,open:dis.filter(function(d){return d.status==="Open";}).length,crit:dis.filter(function(d){return d.severity==="Critical";}).length,res:dis.filter(function(d){return d.status==="Resolved";}).length};
+  var sevData=SEVERITIES.map(function(s){return{name:s,v:dis.filter(function(d){return d.severity===s;}).length,c:SEV[s].c};}).filter(function(s){return s.v>0;});
+
+  // Styles
+  var inp=function(e){return"field-inp"+(e?" err":"");};
+  var card={background:"#0F1828",border:"1px solid #1E2E44",borderRadius:12,padding:"14px 16px"};
+  var secT={fontSize:11,color:"#546580",textTransform:"uppercase",letterSpacing:1,marginBottom:10,fontWeight:600};
+  var sfSel={fontSize:14,background:"#060B14",border:"1px solid #1E2E44",borderRadius:9,padding:"12px 14px",color:"#FFFFFF",width:"100%",appearance:"none",fontFamily:"inherit",cursor:"pointer",minHeight:48};
+  var OfflineBanner=!online?React.createElement("div",{className:"offline-bar"},"OFFLINE — Reports will sync when connection is restored"):null;
+
+  // ── Admin button (top-right of form) ──
+  var adminBtn;
+  if(authState==="loading"||authState==="checking"){
+    adminBtn=React.createElement("div",{className:"spinner"});
+  }else if(authState==="admin"){
+    adminBtn=React.createElement("button",{style:{background:"rgba(245,166,35,0.12)",color:"#F5A623",border:"1px solid rgba(245,166,35,0.3)",borderRadius:8,padding:"8px 13px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"},onClick:function(){setView("admin");}},"\uD83D\uDCCA Dashboard");
+  }else if(authState==="denied"){
+    adminBtn=React.createElement("button",{style:{background:"rgba(255,23,68,0.1)",color:"#FF1744",border:"1px solid rgba(255,23,68,0.3)",borderRadius:8,padding:"8px 13px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:doSignOut},"Not authorised");
+  }else{
+    adminBtn=React.createElement("button",{style:{background:"transparent",color:"#546580",border:"1px solid #1E2E44",borderRadius:8,padding:"8px 13px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:signIn},"\uD83D\uDD10 Admin");
+  }
+
+  // ── SUCCESS ──────────────────────────────────────────────────────────
+  if(view==="success") return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}},
+    React.createElement("div",{style:{width:88,height:88,background:"rgba(0,230,118,0.1)",border:"2px solid #00E676",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:28,animation:"checkPop 0.4s cubic-bezier(.34,1.56,.64,1) forwards"}},
+      React.createElement("svg",{width:40,height:40,viewBox:"0 0 40 40",fill:"none"},React.createElement("path",{d:"M8 20l9 9 15-15",stroke:"#00E676",strokeWidth:3.5,strokeLinecap:"round",strokeLinejoin:"round"}))
+    ),
+    React.createElement("div",{style:{fontSize:24,fontWeight:700,color:"#FFFFFF",marginBottom:10}},"Report Submitted"),
+    React.createElement("div",{style:{color:"#546580",lineHeight:1.8,marginBottom:32,fontSize:15}},"Logged to Firebase and visible\nto the project team in real time."),
+    React.createElement("button",{style:{width:"100%",maxWidth:300,background:"#F5A623",color:"#000",border:"none",borderRadius:12,padding:"16px",fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:54},onClick:function(){setView("form");setForm(blankForm());}},"Submit Another Report")
+  );
+
+  // ── NOT AUTHORIZED ───────────────────────────────────────────────────
+  if(authState==="denied"&&view==="admin") return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}},
+    React.createElement("div",{style:{fontSize:48,marginBottom:20}},"\uD83D\uDEAB"),
+    React.createElement("div",{style:{fontSize:20,fontWeight:700,color:"#FF1744",marginBottom:10}},"Access Denied"),
+    React.createElement("div",{style:{fontSize:14,color:"#546580",marginBottom:8,lineHeight:1.7}},"Your account is not authorised\nto access the admin dashboard."),
+    currentUser&&React.createElement("div",{style:{fontSize:12,color:"#2A3A50",marginBottom:28,fontFamily:"monospace"}},currentUser.email),
+    React.createElement("div",{style:{fontSize:13,color:"#4A5580",marginBottom:28}},"Contact the project administrator to request access."),
+    React.createElement("button",{onClick:doSignOut,style:{background:"transparent",color:"#546580",border:"1px solid #1E2E44",borderRadius:10,padding:"13px 28px",fontSize:14,cursor:"pointer",fontFamily:"inherit"}},"Sign Out"),
+    React.createElement("button",{onClick:function(){setView("form");},style:{background:"transparent",color:"#546580",border:"none",padding:"10px",fontSize:13,cursor:"pointer",fontFamily:"inherit",marginTop:8}},"Back to Form")
+  );
+
+  // ── DETAIL VIEW ──────────────────────────────────────────────────────
+  if(view==="detail"&&detail){
+    var d=detail;var photos=d.photos||[];
+    return React.createElement("div",{className:"fade",style:{minHeight:"100vh",background:"#080C16",paddingBottom:40}},
+      React.createElement(Lightbox,{src:lb,onClose:function(){setLb(null);}}),
+      OfflineBanner,
+      React.createElement(Hdr,{title:"Disruption Detail",sub:PROJECT_NAME+" · Admin",onBack:function(){setView("admin");},accent:"#F5A623"}),
+      React.createElement("div",{style:{padding:16}},
+        React.createElement("div",{style:{...card,border:"1.5px solid "+SEV[d.severity].bd,marginBottom:12}},
+          React.createElement("div",{style:{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}},
+            React.createElement(Pill,{label:d.severity,...SEV[d.severity]}),
+            React.createElement(Pill,{label:d.status,...STA[d.status]})
+          ),
+          React.createElement("h2",{style:{fontSize:18,fontWeight:700,color:"#FFFFFF",marginBottom:6,lineHeight:1.3}},d.type),
+          React.createElement("div",{style:{fontSize:13,color:"#7A8FA6",marginBottom:12}},d.area),
+          React.createElement("div",{style:{borderTop:"1px solid #1E2E44",paddingTop:12,display:"flex",flexDirection:"column",gap:6}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:13}},
+              React.createElement("span",{style:{color:"#546580"}},"Incident Date"),
+              React.createElement("span",{style:{color:"#FFFFFF",fontWeight:600}},fmtInc(d.incidentDate))
+            ),
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:13}},
+              React.createElement("span",{style:{color:"#546580"}},"Submitted"),
+              React.createElement("span",{style:{color:"#7A8FA6"}},fmtDate(d.timestamp))
+            )
+          )
+        ),
+        // Reporter + key metrics
+        React.createElement("div",{style:{...card,marginBottom:12}},
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
+            ...[["Badge",d.badge],["Name",d.name],["Discipline",d.discipline],["Ref",d.id.slice(-8).toUpperCase()]].map(function(x){
+              return React.createElement("div",{key:x[0]},
+                React.createElement("div",{style:{fontSize:10,color:"#546580",textTransform:"uppercase",letterSpacing:0.9,marginBottom:5}},x[0]),
+                React.createElement("div",{style:{fontSize:14,color:"#FFFFFF",fontWeight:600}},x[1])
+              );
+            })
+          )
+        ),
+        // New metric fields row
+        (d.duration||d.crew||d.equipment)&&React.createElement("div",{style:{...card,marginBottom:12}},
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}},
+            d.duration&&React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:10,color:"#546580",textTransform:"uppercase",letterSpacing:0.9,marginBottom:5}},"Duration"),
+              React.createElement("div",{style:{fontSize:18,fontWeight:700,color:"#FFD600",fontFamily:"monospace"}},d.duration+"h")
+            ),
+            d.crew&&React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:10,color:"#546580",textTransform:"uppercase",letterSpacing:0.9,marginBottom:5}},"Crew"),
+              React.createElement("div",{style:{fontSize:18,fontWeight:700,color:"#40C4FF",fontFamily:"monospace"}},d.crew+" pax")
+            ),
+            d.equipment&&React.createElement("div",{style:{gridColumn:"1/-1"}},
+              React.createElement("div",{style:{fontSize:10,color:"#546580",textTransform:"uppercase",letterSpacing:0.9,marginBottom:5}},"Equipment"),
+              React.createElement("div",{style:{fontSize:14,color:"#FFFFFF"}},d.equipment)
+            )
+          )
+        ),
+        // Text sections
+        ...[["Description",d.description],["Operational Impact",d.impact],["Immediate Action Taken",d.action]].filter(function(s){return s[1]&&s[1].trim();}).map(function(s){
+          return React.createElement("div",{key:s[0],style:{...card,marginBottom:10}},
+            React.createElement("div",{style:secT},s[0]),
+            React.createElement("p",{style:{fontSize:14,color:"#CBD5E1",lineHeight:1.75,margin:0}},s[1])
+          );
+        }),
+        photos.length>0&&React.createElement("div",{style:{...card,marginBottom:12}},
+          React.createElement("div",{style:secT},"Photos ("+photos.length+")"),
+          React.createElement("div",{className:"photo-grid"},
+            photos.map(function(src,i){return React.createElement("img",{key:i,src:src,className:"photo-thumb",alt:"Photo "+(i+1),onClick:function(){setLb(src);}});})
+          )
+        ),
+        // Status update
+        React.createElement("div",{style:card},
+          React.createElement("div",{style:secT},"Update Status"),
+          React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+            ["Open","In Progress","Resolved"].map(function(s){
+              return React.createElement("button",{key:s,onClick:function(){chgSta(d.id,s);setView("admin");},
+                style:{padding:"14px 16px",borderRadius:10,border:"1.5px solid "+(d.status===s?STA[s].bd:"#1E2E44"),background:d.status===s?STA[s].bg:"#0A1220",color:d.status===s?STA[s].c:"#546580",cursor:"pointer",fontSize:14,fontWeight:d.status===s?700:400,textAlign:"left",transition:"all 0.15s",fontFamily:"inherit",minHeight:52}},
+                (s==="Open"?"● ":s==="In Progress"?"◆ ":"✓ ")+s+(d.status===s?" — current":"")
+              );
+            })
+          )
+        )
+      )
+    );
+  }
+
+  // ── ADMIN DASHBOARD ──────────────────────────────────────────────────
+  if(view==="admin"){
+    return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",paddingBottom:32}},
+      React.createElement(Lightbox,{src:lb,onClose:function(){setLb(null);}}),
+      OfflineBanner,
+      React.createElement(Hdr,{title:"Project Dashboard",sub:PROJECT_NAME+" · Admin",accent:"#F5A623",
+        right:[
+          React.createElement("button",{key:"csv",style:{background:"rgba(0,230,118,0.1)",color:"#00E676",border:"1px solid rgba(0,230,118,0.3)",borderRadius:9,padding:"8px 11px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"},onClick:function(){exportCSV(dis);}},"\u2193 CSV"),
+          React.createElement("button",{key:"out",style:{background:"transparent",color:"#546580",border:"1px solid #1E2E44",borderRadius:9,padding:"8px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:doSignOut},"Sign out")
+        ]
+      }),
+      // User badge
+      currentUser&&React.createElement("div",{style:{background:"#0D1524",padding:"8px 16px",borderBottom:"1px solid #1E2E44",display:"flex",alignItems:"center",gap:8}},
+        currentUser.photoURL&&React.createElement("img",{src:currentUser.photoURL,style:{width:22,height:22,borderRadius:"50%"}}),
+        React.createElement("span",{style:{fontSize:11,color:"#546580"}},"Signed in as "),
+        React.createElement("span",{style:{fontSize:11,color:"#8899AA",fontFamily:"monospace"}},currentUser.email)
+      ),
+      // Stats
+      React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,padding:"14px 14px 0"}},
+        ...[["Total",stats.total,"#FFFFFF"],["Open",stats.open,"#FFD600"],["Critical",stats.crit,"#FF1744"],["Resolved",stats.res,"#00E676"]].map(function(s){
+          return React.createElement("div",{key:s[0],style:card},
+            React.createElement("div",{style:{fontSize:32,fontWeight:700,fontFamily:"monospace",color:s[2],lineHeight:1}},s[1]),
+            React.createElement("div",{style:{fontSize:10,color:"#546580",marginTop:6,textTransform:"uppercase",letterSpacing:0.9}},s[0])
+          );
+        })
+      ),
+      // Tabs
+      React.createElement("div",{style:{display:"flex",borderBottom:"1px solid #1E2E44",background:"#0D1524",marginTop:14,position:"sticky",top:60,zIndex:9}},
+        [["list","Records"],["analytics","Analytics"],["settings","Settings"],["share","QR Share"]].map(function(t){
+          return React.createElement("button",{key:t[0],onClick:function(){setTab(t[0]);},style:{flex:1,padding:"13px 2px",fontSize:10,textAlign:"center",border:"none",background:"transparent",cursor:"pointer",color:tab===t[0]?"#F5A623":"#546580",borderBottom:tab===t[0]?"2px solid #F5A623":"2px solid transparent",letterSpacing:0.7,textTransform:"uppercase",fontWeight:tab===t[0]?700:400,fontFamily:"inherit",minHeight:48}},t[1]);
+        })
+      ),
+      React.createElement("div",{style:{padding:14}},
+
+        // RECORDS
+        tab==="list"&&React.createElement("div",null,
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}},
+            React.createElement("select",{style:sfSel,value:fsev,onChange:function(e){setFsev(e.target.value);}},
+              React.createElement("option",null,"All Severities"),
+              SEVERITIES.map(function(s){return React.createElement("option",{key:s},s);})
+            ),
+            React.createElement("select",{style:sfSel,value:fsta,onChange:function(e){setFsta(e.target.value);}},
+              ["All Statuses","Open","In Progress","Resolved"].map(function(s){return React.createElement("option",{key:s},s);})
+            )
+          ),
+          loading&&React.createElement("div",{style:{textAlign:"center",padding:"40px 0",color:"#546580"}},"Loading..."),
+          !loading&&filtered.length===0&&React.createElement("div",{style:{textAlign:"center",padding:"40px 0",color:"#546580"}},
+            React.createElement("div",{style:{fontSize:36,marginBottom:10}},"\uD83D\uDCCB"),
+            React.createElement("div",{style:{fontSize:14}},dis.length===0?"No disruptions reported yet":"No records match the filter")
+          ),
+          filtered.map(function(d){
+            var ph=d.photos||[];
+            return React.createElement("div",{key:d.id,className:"fade",onClick:function(){setDid(d.id);setView("detail");},
+              style:{...card,border:"1px solid "+(d.severity==="Critical"?SEV.Critical.bd:"#1E2E44"),marginBottom:12,cursor:"pointer"}},
+              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}},
+                React.createElement("div",{style:{flex:1,paddingRight:10}},
+                  React.createElement("div",{style:{fontSize:15,fontWeight:600,color:"#FFFFFF",lineHeight:1.3,marginBottom:4}},d.type),
+                  React.createElement("div",{style:{fontSize:12,color:"#546580"}},d.area+" · "+timeAgo(d.timestamp))
+                ),
+                React.createElement(Pill,{label:d.severity,...SEV[d.severity]})
+              ),
+              React.createElement("p",{style:{fontSize:13,color:"#7A8FA6",lineHeight:1.5,marginBottom:8}},d.description.length>80?d.description.slice(0,80)+"...":d.description),
+              // Metrics row
+              React.createElement("div",{style:{display:"flex",gap:14,marginBottom:8,flexWrap:"wrap"}},
+                React.createElement("span",{style:{fontSize:12,color:"#546580"}},"\uD83D\uDCC5 ",React.createElement("span",{style:{color:"#8899AA"}},fmtInc(d.incidentDate))),
+                d.duration&&React.createElement("span",{style:{fontSize:12,color:"#FFD600"}},"\u23F1 "+d.duration+"h"),
+                d.crew&&React.createElement("span",{style:{fontSize:12,color:"#40C4FF"}},"\uD83D\uDC65 "+d.crew+" pax"),
+                ph.length>0&&React.createElement("span",{style:{fontSize:12,color:"#F5A623"}},"\uD83D\uDCF7 "+ph.length)
+              ),
+              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8,borderTop:"1px solid #1E2E44",flexWrap:"wrap",gap:6}},
+                React.createElement("div",{style:{fontSize:12,color:"#546580"}},
+                  React.createElement("span",{style:{color:"#F5A623",fontFamily:"monospace",fontWeight:700}},"#"+d.badge)," · ",d.name," · ",d.discipline
+                ),
+                React.createElement(Pill,{label:d.status,...STA[d.status]})
+              )
+            );
+          })
+        ),
+
+        // ANALYTICS
+        tab==="analytics"&&React.createElement("div",null,
+          React.createElement("div",{style:{display:"flex",gap:8,marginBottom:14}},
+            ["Open","In Progress","Resolved"].map(function(s){
+              var c=dis.filter(function(d){return d.status===s;}).length;
+              var pct=dis.length?Math.round(c/dis.length*100):0;
+              return React.createElement("div",{key:s,style:{flex:1,background:STA[s].bg,border:"1px solid "+STA[s].bd,borderRadius:10,padding:"12px 6px",textAlign:"center"}},
+                React.createElement("div",{style:{fontSize:26,fontWeight:700,color:STA[s].c,fontFamily:"monospace"}},c),
+                React.createElement("div",{style:{fontSize:9,color:STA[s].c,marginTop:3,opacity:0.8,letterSpacing:0.5}},(s==="In Progress"?"IN PROG":s.toUpperCase())),
+                React.createElement("div",{style:{fontSize:11,color:STA[s].c,marginTop:2}},pct+"%")
+              );
+            })
+          ),
+          // Duration & Crew totals
+          React.createElement("div",{style:{display:"flex",gap:10,marginBottom:14}},
+            React.createElement("div",{style:{...card,flex:1,textAlign:"center"}},
+              React.createElement("div",{style:{fontSize:24,fontWeight:700,color:"#FFD600",fontFamily:"monospace"}},
+                dis.reduce(function(a,d){return a+(parseFloat(d.duration)||0);},0).toFixed(1)+"h"
+              ),
+              React.createElement("div",{style:{fontSize:10,color:"#546580",marginTop:4,textTransform:"uppercase",letterSpacing:0.8}},"Total Downtime")
+            ),
+            React.createElement("div",{style:{...card,flex:1,textAlign:"center"}},
+              React.createElement("div",{style:{fontSize:24,fontWeight:700,color:"#40C4FF",fontFamily:"monospace"}},
+                dis.reduce(function(a,d){return a+(parseInt(d.crew)||0);},0)
+              ),
+              React.createElement("div",{style:{fontSize:10,color:"#546580",marginTop:4,textTransform:"uppercase",letterSpacing:0.8}},"Total Crew Affected")
+            )
+          ),
+          sevData.length>0&&React.createElement("div",{style:{...card,marginBottom:14}},
+            React.createElement("div",{style:secT},"By Severity"),
+            React.createElement("div",{style:{display:"flex",alignItems:"flex-end",gap:10,height:140,paddingBottom:28,position:"relative"}},
+              sevData.map(function(s,i){
+                var maxV=Math.max.apply(null,sevData.map(function(x){return x.v;}));
+                var pct=maxV>0?Math.round((s.v/maxV)*100):0;
+                return React.createElement("div",{key:i,style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",gap:4,height:"100%"}},
+                  React.createElement("div",{style:{fontSize:14,fontWeight:700,color:s.c,fontFamily:"monospace"}},s.v),
+                  React.createElement("div",{style:{width:"100%",height:pct+"%",background:s.c,borderRadius:"4px 4px 0 0",minHeight:4,opacity:0.75}}),
+                  React.createElement("div",{style:{position:"absolute",bottom:0,fontSize:10,color:"#546580",left:(i*(100/sevData.length)+(50/sevData.length))+"%",transform:"translateX(-50%)",whiteSpace:"nowrap"}},s.name)
+                );
+              })
+            )
+          ),
+          React.createElement("div",{style:{...card,marginBottom:14}},
+            React.createElement("div",{style:secT},"By Discipline"),
+            disciplines.map(function(n){return{n:n,v:dis.filter(function(d){return d.discipline===n;}).length};}).filter(function(d){return d.v>0;}).sort(function(a,b){return b.v-a.v;}).map(function(d){
+              return React.createElement("div",{key:d.n,style:{marginBottom:11}},
+                React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:5,fontSize:13}},React.createElement("span",{style:{color:"#CBD5E1"}},d.n),React.createElement("span",{style:{color:"#FFFFFF",fontWeight:700,fontFamily:"monospace"}},d.v)),
+                React.createElement("div",{style:{height:5,background:"#1E2E44",borderRadius:3}},React.createElement("div",{style:{height:5,width:(d.v/dis.length*100)+"%",background:"#F5A623",borderRadius:3}}))
+              );
+            })
+          ),
+          React.createElement("div",{style:card},
+            React.createElement("div",{style:secT},"By Area"),
+            areas.map(function(a){return{a:a,v:dis.filter(function(d){return d.area===a;}).length};}).filter(function(x){return x.v>0;}).sort(function(x,y){return y.v-x.v;}).map(function(x){
+              return React.createElement("div",{key:x.a,style:{marginBottom:11}},
+                React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:5,fontSize:13}},React.createElement("span",{style:{color:"#CBD5E1"}},x.a),React.createElement("span",{style:{color:"#FFFFFF",fontWeight:700,fontFamily:"monospace"}},x.v)),
+                React.createElement("div",{style:{height:5,background:"#1E2E44",borderRadius:3}},React.createElement("div",{style:{height:5,width:(x.v/dis.length*100)+"%",background:"#40C4FF",borderRadius:3}}))
+              );
+            })
+          )
+        ),
+
+        // SETTINGS
+        tab==="settings"&&React.createElement("div",null,
+          React.createElement("div",{style:{...card,marginBottom:14}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},React.createElement("div",{style:secT},"Work Areas"),React.createElement("span",{style:{fontSize:11,color:"#546580"}},areas.length+" items")),
+            React.createElement(EditableList,{items:areas,placeholder:"area",onChange:saveAreas})
+          ),
+          React.createElement("div",{style:{...card,marginBottom:14}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},React.createElement("div",{style:secT},"Disciplines"),React.createElement("span",{style:{fontSize:11,color:"#546580"}},disciplines.length+" items")),
+            React.createElement(EditableList,{items:disciplines,placeholder:"discipline",onChange:saveDisc})
+          ),
+          React.createElement("div",{style:{...card,marginBottom:14}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},React.createElement("div",{style:secT},"Disruption Types"),React.createElement("span",{style:{fontSize:11,color:"#546580"}},types.length+" items")),
+            React.createElement(EditableList,{items:types,placeholder:"disruption type",onChange:saveTypes})
+          ),
+          // Admin users
+          React.createElement("div",{style:{...card,marginBottom:14}},
+            React.createElement("div",{style:secT},"Admin Users (Google accounts)"),
+            React.createElement("div",{style:{fontSize:12,color:"#546580",marginBottom:12,lineHeight:1.6}},"Only these Google accounts can sign in and access the dashboard."),
+            React.createElement(EditableList,{items:admins.filter(function(e){return e!==BOOTSTRAP_ADMIN;}),placeholder:"email@example.com",onChange:function(l){saveAdmins([BOOTSTRAP_ADMIN,...l]);}}),
+            React.createElement("div",{style:{fontSize:11,color:"#2A3A50",marginTop:8}},BOOTSTRAP_ADMIN+" is always an admin and cannot be removed.")
+          ),
+          React.createElement("div",{style:{...card,background:"rgba(255,23,68,0.05)",border:"1px solid rgba(255,23,68,0.2)"}},
+            React.createElement("div",{style:{fontSize:13,color:"#FF6B6B",marginBottom:8,fontWeight:600}},"Reset Lists to Defaults"),
+            React.createElement("div",{style:{fontSize:12,color:"#546580",marginBottom:12,lineHeight:1.6}},"Restores original areas, disciplines and disruption types. Reports are not affected."),
+            React.createElement("button",{onClick:function(){saveAreas(DEFAULT_AREAS);saveDisc(DEFAULT_DISCIPLINES);saveTypes(DEFAULT_TYPES);},style:{background:"#B91C1C",color:"#fff",border:"none",borderRadius:9,padding:"12px 18px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:48}},"Reset to Defaults")
+          )
+        ),
+
+        // QR SHARE
+        tab==="share"&&React.createElement("div",{style:{textAlign:"center",paddingTop:10}},
+          React.createElement("div",{style:{fontSize:14,color:"#546580",marginBottom:22,lineHeight:1.7}},"Print and display this QR code on site boards,\ntoolboxes, and safety notice areas."),
+          React.createElement("div",{style:{display:"inline-block",background:"#F0F4F8",borderRadius:18,padding:22,marginBottom:18,border:"3px solid #1E2E44"}},
+            qr?React.createElement("img",{src:qr,width:210,height:210,alt:"QR code"}):React.createElement("div",{style:{width:210,height:210,display:"flex",alignItems:"center",justifyContent:"center",color:"#546580",fontSize:13}},"Generating...")
+          ),
+          React.createElement("div",{style:{...card,marginBottom:16,textAlign:"left"}},
+            React.createElement("div",{style:secT},"Field Form URL"),
+            React.createElement("div",{style:{fontSize:11,color:"#F5A623",wordBreak:"break-all",fontFamily:"monospace",lineHeight:1.7}},window.location.href)
+          ),
+          React.createElement("button",{style:{width:"100%",maxWidth:300,background:cp?"#00E676":"#F5A623",color:"#000",border:"none",borderRadius:12,padding:"15px",fontSize:15,fontWeight:700,cursor:"pointer",transition:"background 0.3s",fontFamily:"inherit",minHeight:54},onClick:function(){try{navigator.clipboard.writeText(window.location.href);}catch(e){}setCp(true);setTimeout(function(){setCp(false);},2500);}},
+            cp?"\u2713 Link Copied":"Copy Link"
+          )
+        )
+      )
+    );
+  }
+
+  // ── FIELD FORM ───────────────────────────────────────────────────────
+  var photos=form.photos||[];
+  return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",paddingBottom:60}},
+    React.createElement("input",{type:"file",ref:camRef,accept:"image/*",capture:"environment",style:{display:"none"},onChange:handlePhotos}),
+    React.createElement("input",{type:"file",ref:galRef,accept:"image/*",multiple:true,style:{display:"none"},onChange:handlePhotos}),
+    OfflineBanner,
+    React.createElement(Hdr,{title:"Report Disruption",sub:PROJECT_NAME+" · Field Entry",accent:"#FF1744",right:adminBtn}),
+    React.createElement("div",{style:{padding:"16px"}},
+      React.createElement("div",{style:{background:"rgba(245,166,35,0.08)",border:"1px solid rgba(245,166,35,0.25)",borderRadius:10,padding:"12px 16px",marginBottom:22,fontSize:13,color:"#8A6500",lineHeight:1.7}},
+        "* = Mandatory \u00b7 Timestamp auto-recorded \u00b7 Photos stored in Firestore"
+      ),
+
+      React.createElement(Lbl,{label:"Badge Number",err:err.badge,req:true},
+        React.createElement("input",{inputMode:"numeric",pattern:"[0-9]*",value:form.badge,onChange:function(e){setForm(function(p){return{...p,badge:e.target.value.replace(/\D/g,"")};});},placeholder:"Your badge number",className:inp(err.badge)})
+      ),
+      React.createElement(Lbl,{label:"Full Name",err:err.name,req:true},
+        React.createElement("input",{value:form.name,onChange:function(e){setForm(function(p){return{...p,name:e.target.value};});},placeholder:"Your full name",className:inp(err.name)})
+      ),
+      React.createElement(Lbl,{label:"Discipline",err:err.discipline,req:true},
+        React.createElement("select",{value:form.discipline,onChange:function(e){setForm(function(p){return{...p,discipline:e.target.value};});},className:inp(err.discipline)+" field-inp-sel"},
+          React.createElement("option",{value:""},"Select your discipline..."),
+          disciplines.map(function(d){return React.createElement("option",{key:d},d);})
+        )
+      ),
+      React.createElement(Lbl,{label:"Affected Area",err:err.area,req:true},
+        React.createElement("select",{value:form.area,onChange:function(e){setForm(function(p){return{...p,area:e.target.value};});},className:inp(err.area)+" field-inp-sel"},
+          React.createElement("option",{value:""},"Select affected area..."),
+          areas.map(function(a){return React.createElement("option",{key:a},a);})
+        )
+      ),
+      React.createElement(Lbl,{label:"Disruption Type",err:err.type,req:true},
+        React.createElement("select",{value:form.type,onChange:function(e){setForm(function(p){return{...p,type:e.target.value};});},className:inp(err.type)+" field-inp-sel"},
+          React.createElement("option",{value:""},"Select disruption type..."),
+          types.map(function(t){return React.createElement("option",{key:t},t);})
+        )
+      ),
+      React.createElement(Lbl,{label:"Severity Level",err:err.severity,req:true},
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+          SEVERITIES.map(function(s){
+            var active=form.severity===s;
+            return React.createElement("button",{key:s,type:"button",onClick:function(){setForm(function(p){return{...p,severity:s};});setErr(function(p){return{...p,severity:undefined};});},
+              style:{padding:"16px 8px",borderRadius:12,border:"2px solid "+(active?SEV[s].c:"#1E2E44"),background:active?SEV[s].bg:"#0A1220",color:active?SEV[s].c:"#546580",fontWeight:active?700:500,cursor:"pointer",fontSize:15,transition:"all 0.15s",fontFamily:"inherit",minHeight:58}},s);
+          })
+        ),
+        err.severity&&React.createElement("div",{style:{fontSize:12,color:"#FF1744",marginTop:6}},"\u26a0 "+err.severity)
+      ),
+      React.createElement(Lbl,{label:"Date & Time of Incident",err:err.incidentDate,req:true},
+        React.createElement("input",{type:"datetime-local",value:form.incidentDate,onChange:function(e){setForm(function(p){return{...p,incidentDate:e.target.value};});},className:inp(err.incidentDate)}),
+        React.createElement("div",{style:{fontSize:12,color:"#546580",marginTop:6}},"When did the disruption occur?")
+      ),
+      React.createElement(Lbl,{label:"Description of Disruption",err:err.description,req:true},
+        React.createElement("textarea",{value:form.description,onChange:function(e){setForm(function(p){return{...p,description:e.target.value};});},placeholder:"Describe what happened in detail...",className:inp(err.description)+" field-inp",style:{minHeight:120,resize:"vertical"}})
+      ),
+
+      // ── NEW FIELDS ──
+      React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}},
+        React.createElement(Lbl,{label:"Duration (hours)",err:err.duration},
+          React.createElement("input",{type:"number",inputMode:"decimal",min:"0",step:"0.5",value:form.duration,onChange:function(e){setForm(function(p){return{...p,duration:e.target.value};});},placeholder:"e.g. 2.5",className:inp(err.duration),style:{marginBottom:0}})
+        ),
+        React.createElement(Lbl,{label:"Crew Affected",err:err.crew},
+          React.createElement("input",{type:"number",inputMode:"numeric",min:"0",step:"1",value:form.crew,onChange:function(e){setForm(function(p){return{...p,crew:e.target.value};});},placeholder:"No. of crew",className:inp(err.crew),style:{marginBottom:0}})
+        )
+      ),
+      React.createElement(Lbl,{label:"Equipment Involved"},
+        React.createElement("input",{value:form.equipment,onChange:function(e){setForm(function(p){return{...p,equipment:e.target.value};});},placeholder:"Equipment tag, model or description (optional)",className:"field-inp"})
+      ),
+
+      React.createElement(Lbl,{label:"Operational Impact"},
+        React.createElement("textarea",{value:form.impact,onChange:function(e){setForm(function(p){return{...p,impact:e.target.value};});},placeholder:"Operations affected, estimated duration... (optional)",className:"field-inp",style:{minHeight:90,resize:"vertical"}})
+      ),
+      React.createElement(Lbl,{label:"Immediate Action Taken"},
+        React.createElement("textarea",{value:form.action,onChange:function(e){setForm(function(p){return{...p,action:e.target.value};});},placeholder:"Corrective actions already taken... (optional)",className:"field-inp",style:{minHeight:90,resize:"vertical"}})
+      ),
+
+      // Photos
+      React.createElement(Lbl,{label:"Photos (max "+MAX_PHOTOS+")"},
+        React.createElement("div",null,
+          photos.length>0&&React.createElement("div",{className:"photo-grid",style:{marginBottom:12}},
+            photos.map(function(src,i){
+              return React.createElement("div",{key:i,style:{position:"relative"}},
+                React.createElement("img",{src:src,className:"photo-thumb",alt:"Photo "+(i+1),onClick:function(){setLb(src);}}),
+                React.createElement("button",{onClick:function(e){e.stopPropagation();removePhoto(i);},style:{position:"absolute",top:5,right:5,width:26,height:26,background:"#FF1744",color:"#fff",border:"none",borderRadius:"50%",fontSize:14,lineHeight:"26px",textAlign:"center",cursor:"pointer",padding:0,fontWeight:700}},"×")
+              );
+            })
+          ),
+          photos.length<MAX_PHOTOS&&React.createElement("div",{style:{display:"flex",gap:10}},
+            React.createElement("button",{className:"photo-btn",onClick:function(){camRef.current&&camRef.current.click();}},
+              React.createElement("span",{className:"ico"},"\uD83D\uDCF7"),
+              React.createElement("span",{style:{fontWeight:600}},"Take Photo"),
+              React.createElement("span",{style:{fontSize:11,color:"#2A3D56"}},"Camera")
+            ),
+            React.createElement("button",{className:"photo-btn",onClick:function(){galRef.current&&galRef.current.click();}},
+              React.createElement("span",{className:"ico"},"\uD83D\uDDBC\uFE0F"),
+              React.createElement("span",{style:{fontWeight:600}},"Gallery"),
+              React.createElement("span",{style:{fontSize:11,color:"#2A3D56"}},"Choose file")
+            )
+          ),
+          React.createElement("div",{style:{fontSize:12,color:"#546580",marginTop:8}},"Tap thumbnail to preview · Auto-compressed")
+        )
+      ),
+
+      // Upload progress
+      busy&&uploadPct>0&&React.createElement("div",{style:{marginBottom:16}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:12,color:"#546580",marginBottom:6}},
+          React.createElement("span",null,uploadPct<90?"Uploading photos...":"Saving report..."),
+          React.createElement("span",null,uploadPct+"%")
+        ),
+        React.createElement("div",{style:{height:6,background:"#1E2E44",borderRadius:3}},
+          React.createElement("div",{style:{height:6,width:uploadPct+"%",background:"#F5A623",borderRadius:3,transition:"width 0.3s"}})
+        )
+      ),
+
+      React.createElement("button",{onClick:submit,disabled:busy,
+        style:{width:"100%",background:busy?"#1E2E44":"#DC2626",color:busy?"#546580":"#FFFFFF",border:"none",borderRadius:12,padding:"18px",fontSize:17,fontWeight:700,cursor:"pointer",letterSpacing:0.5,transition:"all 0.2s",fontFamily:"inherit",minHeight:58,boxShadow:busy?"none":"0 4px 16px rgba(220,38,38,0.35)"}},
+        busy?"Submitting...":"Submit Disruption Report"
+      ),
+      React.createElement(Lightbox,{src:lb,onClose:function(){setLb(null);}}),
+      React.createElement("div",{style:{textAlign:"center",marginTop:16,fontSize:12,color:"#1E2E44"}},"delay.nfsdashboard.com · "+PROJECT_NAME)
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
