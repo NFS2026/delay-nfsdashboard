@@ -286,19 +286,91 @@ function Lbl(p){
   );
 }
 
-// Combobox: input + datalist (allows manual entry AND selection from list)
+// Full-screen modal combobox — works reliably on iOS Safari, Android Chrome, Samsung Browser
 function Combo(p){
-  var id="cb-"+p.id;
+  var [open,setOpen]=useState(false);
+  var [q,setQ]=useState("");
+
+  function select(opt){p.onChange(opt);setOpen(false);setQ("");}
+  function openModal(){if(!p.disabled)setOpen(true);}
+  function close(){setOpen(false);setQ("");}
+
+  var filtered=(p.options||[]).filter(function(o){
+    return!q||o.toLowerCase().indexOf(q.toLowerCase())>=0;
+  }).slice(0,200);
+
+  var hasExactMatch=p.options&&p.options.indexOf(q)>=0;
+
   return React.createElement("div",null,
-    React.createElement("input",{
-      list:id,value:p.value,
-      onChange:function(e){p.onChange(e.target.value);},
-      placeholder:p.placeholder,
-      className:"field-inp"+(p.err?" err":""),
-      disabled:p.disabled||false
-    }),
-    React.createElement("datalist",{id:id},
-      (p.options||[]).map(function(o,i){return React.createElement("option",{key:i,value:o});})
+    // Tap target — looks like an input, opens modal on tap
+    React.createElement("div",{onClick:openModal,style:{
+      width:"100%",background:"#060B14",
+      border:"1.5px solid "+(p.err?"#FF1744":"#253550"),
+      borderRadius:10,padding:"14px 16px",minHeight:52,
+      display:"flex",alignItems:"center",justifyContent:"space-between",
+      cursor:p.disabled?"not-allowed":"pointer",
+      opacity:p.disabled?0.4:1,boxSizing:"border-box"
+    }},
+      React.createElement("span",{style:{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
+        color:p.value?"#FFFFFF":"#546580",fontSize:16}},p.value||p.placeholder),
+      React.createElement("span",{style:{color:"#546580",marginLeft:8,fontSize:18,flexShrink:0,lineHeight:1}},"\u25be")
+    ),
+    // Full-screen overlay modal
+    open&&React.createElement("div",{style:{
+      position:"fixed",top:0,left:0,right:0,bottom:0,
+      background:"rgba(0,0,0,0.95)",zIndex:9999,
+      display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto"
+    }},
+      // Search header
+      React.createElement("div",{style:{background:"#0D1524",borderBottom:"1px solid #253550",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",flexShrink:0}},
+        React.createElement("input",{value:q,onChange:function(e){setQ(e.target.value);},
+          placeholder:"Search or type a value...",autoFocus:true,
+          autoComplete:"off",autoCorrect:"off",autoCapitalize:"none",spellCheck:false,
+          style:{flex:1,background:"#060B14",border:"1.5px solid #253550",borderRadius:9,
+            padding:"12px 14px",color:"#FFFFFF",fontSize:16,minHeight:48,fontFamily:"inherit"}}),
+        React.createElement("button",{onClick:close,style:{background:"#1E2E44",color:"#FFFFFF",border:"none",
+          borderRadius:9,width:48,height:48,fontSize:20,cursor:"pointer",fontFamily:"inherit",flexShrink:0}},"\u2715")
+      ),
+      // Count bar
+      React.createElement("div",{style:{padding:"8px 16px",fontSize:11,color:"#8899AA",
+        textTransform:"uppercase",letterSpacing:0.9,background:"#080C16",flexShrink:0}},
+        q?(filtered.length+" matches for '"+q+"'"):(filtered.length+" options available")
+      ),
+      // Manual entry row — shown when user has typed something not in list
+      q&&!hasExactMatch&&React.createElement("div",{onClick:function(){select(q);},style:{
+        padding:"15px 16px",background:"rgba(245,166,35,0.08)",
+        borderBottom:"1px solid #253550",fontSize:14,color:"#F5A623",
+        cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",gap:10
+      }},
+        React.createElement("span",{style:{fontSize:20,lineHeight:1}},"\u270e"),
+        React.createElement("span",null,"Use ",React.createElement("strong",null,'"'+q+'"')," as manual entry")
+      ),
+      // Scrollable options list
+      React.createElement("div",{style:{overflowY:"auto",flex:1,WebkitOverflowScrolling:"touch"}},
+        filtered.length===0&&React.createElement("div",{style:{padding:"28px 16px",color:"#546580",fontSize:14,textAlign:"center"}},
+          q?"No matches — use manual entry above":"No options available"
+        ),
+        filtered.map(function(opt,i){
+          var sel=opt===p.value;
+          return React.createElement("div",{key:i,onClick:function(){select(opt);},style:{
+            padding:"16px 16px",fontSize:14,
+            color:sel?"#F5A623":"#FFFFFF",
+            background:sel?"rgba(245,166,35,0.07)":"transparent",
+            borderBottom:"1px solid #1A2840",cursor:"pointer",
+            display:"flex",alignItems:"center",justifyContent:"space-between",
+            minHeight:52
+          }},
+            React.createElement("span",{style:{lineHeight:1.4}},opt),
+            sel&&React.createElement("span",{style:{color:"#F5A623",fontSize:18,flexShrink:0}},"\u2713")
+          );
+        })
+      ),
+      // Cancel button
+      React.createElement("div",{style:{padding:"12px 16px",background:"#0D1524",borderTop:"1px solid #253550",flexShrink:0}},
+        React.createElement("button",{onClick:close,style:{width:"100%",background:"transparent",
+          color:"#FFFFFF",border:"1px solid #253550",borderRadius:10,padding:"15px",
+          fontSize:15,cursor:"pointer",fontFamily:"inherit",minHeight:52}},"Cancel")
+      )
     )
   );
 }
