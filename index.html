@@ -1114,7 +1114,19 @@ function App(){
         style:{width:"100%",background:busy?"#08102A":"#0055BB",color:busy?"#4A7A9A":"#FFFFFF",border:"none",borderRadius:12,padding:"18px",fontSize:17,fontWeight:700,cursor:"pointer",letterSpacing:0.5,transition:"all 0.2s",fontFamily:"inherit",minHeight:58,boxShadow:busy?"none":"0 4px 16px rgba(0,85,187,0.45)"}},
         busy?"Submitting...":"Submit Disruption Report"
       ),
-      React.createElement("div",{style:{textAlign:"center",marginTop:16,fontSize:12,color:"#4A7A9A"}},"delay.nfsdashboard.com · "+PROJECT_NAME)
+      // Live counters — visible to field workers without admin login
+      React.createElement("div",{style:{display:"flex",justifyContent:"center",alignItems:"center",gap:0,marginTop:20,marginBottom:4}},
+        React.createElement("div",{style:{flex:1,textAlign:"center",padding:"14px 0",background:"rgba(0,200,255,0.06)",borderRadius:"12px 0 0 12px",border:"1px solid rgba(0,200,255,0.2)",borderRight:"none"}},
+          React.createElement("div",{style:{fontSize:36,fontWeight:700,fontFamily:"monospace",color:"#00C8FF",lineHeight:1}},
+            (function(){var s=new Date();var t=new Date(s.getFullYear(),s.getMonth(),s.getDate()).getTime();return dis.filter(function(d){return d.timestamp>=t;}).length;})()
+          )
+        ),
+        React.createElement("div",{style:{width:1,background:"rgba(255,255,255,0.1)",alignSelf:"stretch"}}),
+        React.createElement("div",{style:{flex:1,textAlign:"center",padding:"14px 0",background:"rgba(255,255,255,0.03)",borderRadius:"0 12px 12px 0",border:"1px solid rgba(255,255,255,0.1)",borderLeft:"none"}},
+          React.createElement("div",{style:{fontSize:36,fontWeight:700,fontFamily:"monospace",color:"rgba(255,255,255,0.6)",lineHeight:1}},dis.length)
+        )
+      ),
+      React.createElement("div",{style:{textAlign:"center",marginTop:10,fontSize:12,color:"#4A7A9A"}},"delay.nfsdashboard.com · "+PROJECT_NAME)
     )
   );
 }
