@@ -11,36 +11,36 @@
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#080C16}
+html,body{height:100%;background:linear-gradient(160deg,#14162C 0%,#1C2040 100%);background-attachment:fixed}
 body{font-family:'Segoe UI',system-ui,sans-serif;color:#FFFFFF;min-height:100vh;-webkit-tap-highlight-color:transparent;max-width:480px;margin:0 auto;font-size:16px}
 select,input,textarea{font-family:inherit;-webkit-appearance:none;color:#FFFFFF}
 input[type=datetime-local]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:0.8;cursor:pointer}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
-option{background:#0F1828;color:#FFFFFF}
+option{background:#1C2248;color:#FFFFFF}
 ::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-thumb{background:#2A3A50;border-radius:2px}
-input:focus,textarea:focus,select:focus{outline:none;border-color:#F5A623!important;box-shadow:0 0 0 3px rgba(245,166,35,0.25)!important}
-input::placeholder,textarea::placeholder{color:#546580}
+::-webkit-scrollbar-thumb{background:#2A4060;border-radius:2px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#00C8FF!important;box-shadow:0 0 0 3px rgba(0,200,255,0.25)!important}
+input::placeholder,textarea::placeholder{color:rgba(255,255,255,0.55)}
 button:active{transform:scale(0.96)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes checkPop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .fade{animation:fadeUp 0.25s ease forwards}
-.card{background:#0F1828;border:1px solid #253550;border-radius:12px;padding:14px 16px}
-.field-inp{width:100%;background:#060B14;border:1.5px solid #253550;border-radius:10px;padding:14px 16px;color:#FFFFFF;font-size:16px;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box;min-height:52px}
+.card{background:#1C2248;border:1px solid rgba(255,255,255,0.4);border-radius:12px;padding:14px 16px}
+.field-inp{width:100%;background:#0F1535;border:1.5px solid rgba(255,255,255,0.6);border-radius:10px;padding:14px 16px;color:#FFFFFF;font-size:16px;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box;min-height:52px}
 .field-inp.err{border-color:#FF1744!important;background:#160006}
 .field-inp:disabled{opacity:0.4;cursor:not-allowed}
 textarea.field-inp{resize:vertical;min-height:100px}
 .offline-bar{background:#FF1744;color:#fff;font-size:12px;font-weight:600;text-align:center;padding:7px;letter-spacing:0.5px}
-.spinner{width:20px;height:20px;border:2px solid #253550;border-top-color:#F5A623;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
-.list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#0A1220;border:1px solid #253550;border-radius:8px;margin-bottom:6px;font-size:14px;color:#FFFFFF}
-.list-item button{background:none;border:none;color:#546580;cursor:pointer;font-size:18px;padding:0 4px;line-height:1;flex-shrink:0}
+.spinner{width:20px;height:20px;border:2px solid #1E3A5F;border-top-color:#00C8FF;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+.list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#141830;border:1px solid rgba(255,255,255,0.4);border-radius:8px;margin-bottom:6px;font-size:14px;color:#FFFFFF}
+.list-item button{background:none;border:none;color:rgba(255,255,255,0.55);cursor:pointer;font-size:18px;padding:0 4px;line-height:1;flex-shrink:0}
 .list-item button:hover{color:#FF1744}
 .add-row{display:flex;gap:8px;margin-top:10px}
-.add-row input{flex:1;background:#060B14;border:1.5px solid #253550;border-radius:8px;padding:12px 14px;font-size:14px;color:#FFFFFF;font-family:inherit;min-height:48px}
-.add-row input:focus{outline:none;border-color:#F5A623;box-shadow:0 0 0 3px rgba(245,166,35,0.2)}
-.add-row input::placeholder{color:#546580}
-.add-row button{background:#F5A623;color:#000;border:none;border-radius:8px;padding:12px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;min-height:48px}
+.add-row input{flex:1;background:#0F1535;border:1.5px solid rgba(255,255,255,0.6);border-radius:8px;padding:12px 14px;font-size:14px;color:#FFFFFF;font-family:inherit;min-height:48px}
+.add-row input:focus{outline:none;border-color:#00C8FF;box-shadow:0 0 0 3px rgba(0,200,255,0.2)}
+.add-row input::placeholder{color:rgba(255,255,255,0.55)}
+.add-row button{background:#00C8FF;color:#000;border:none;border-radius:8px;padding:12px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;min-height:48px}
 </style>
 </head>
 <body>
@@ -219,7 +219,8 @@ const DEFAULT_TYPES=[
   "Construction Equipment : Breakdown","Construction Equipment : Non Available",
   "HSE","Interface / Coordination Issue","Manpower Shortage",
   "TEN Material Missing","CCC Material Missing",
-  "Permit Delay (PTW)","Quality Issue","Weather Delay"
+  "Permit Delay (PTW)","Quality Issue","Weather Delay",
+  "Predecessor Activity Not Ready"
 ];
 const SEVERITIES=["Low","Medium","High","Critical"];
 const SEV={
@@ -251,9 +252,9 @@ function findLv1(val){
 }
 
 function exportCSV(data){
-  var h=["Ref","Badge","Name","Discipline","Lv1 Area","Lv2 Area","Activity ID","Disruption Type","Severity","Incident Date","Description","Resources Involved","Impact","Action","Status","Submitted"];
+  var h=["Ref","Badge","Name","Discipline","Lv1 Area","Lv2 Area","Activity ID","Disruption Type","Incident Date","Description","Resources Involved","Impact","Action","Status","Submitted"];
   var rows=data.map(function(d){
-    return[d.id,d.badge,'"'+d.name+'"','"'+d.discipline+'"','"'+(d.areaLv1||"")+'"','"'+(d.areaLv2||"")+'"',d.activityId||"",'"'+d.type+'"',d.severity,'"'+fmtInc(d.incidentDate)+'"','"'+(d.description||"").replace(/"/g,'""')+'"','"'+(d.resources||"").replace(/"/g,'""')+'"','"'+(d.impact||"").replace(/"/g,'""')+'"','"'+(d.action||"").replace(/"/g,'""')+'"',d.status,fmtDate(d.timestamp)];
+    return[d.id,d.badge,'"'+d.name+'"','"'+d.discipline+'"','"'+(d.areaLv1||"")+'"','"'+(d.areaLv2||"")+'"',d.activityId||"",'"'+d.type+'"','"'+fmtInc(d.incidentDate)+'"','"'+(d.description||"").replace(/"/g,'""')+'"','"'+(d.resources||"").replace(/"/g,'""')+'"','"'+(d.impact||"").replace(/"/g,'""')+'"','"'+(d.action||"").replace(/"/g,'""')+'"',d.status,fmtDate(d.timestamp)];
   });
   var csv=[h,...rows].map(function(r){return r.join(",");}).join("\n");
   var blob=new Blob([csv],{type:"text/csv"});
@@ -266,13 +267,13 @@ function Pill(p){
   return React.createElement("span",{style:{background:p.bg,color:p.c,border:"1px solid "+(p.bd||p.c),borderRadius:5,padding:"3px 10px",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,whiteSpace:"nowrap",flexShrink:0}},p.label);
 }
 function Hdr(p){
-  return React.createElement("div",{style:{background:"#0D1524",borderBottom:"1px solid #253550",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,minHeight:60,boxShadow:"0 2px 8px rgba(0,0,0,0.5)"}},
+  return React.createElement("div",{style:{background:"#0C0E24",borderBottom:"1px solid #1E3A5F",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,minHeight:60,boxShadow:"0 2px 8px rgba(0,0,0,0.5)"}},
     React.createElement("div",{style:{display:"flex",alignItems:"center",gap:12}},
       p.onBack&&React.createElement("button",{style:{background:"transparent",border:"none",color:"#FFFFFF",fontSize:24,cursor:"pointer",lineHeight:1,padding:"0 8px 0 0",fontFamily:"inherit"},onClick:p.onBack},"\u2190"),
-      React.createElement("div",{style:{width:36,height:36,background:p.accent||"#F5A623",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}},"\u26a1"),
+      React.createElement("div",{style:{width:36,height:36,background:p.accent||"#00C8FF",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}},"\u26a1"),
       React.createElement("div",null,
         React.createElement("div",{style:{fontSize:15,fontWeight:700,color:"#FFFFFF",letterSpacing:0.3}},p.title),
-        React.createElement("div",{style:{fontSize:10,color:"#8899AA",letterSpacing:1,textTransform:"uppercase",marginTop:2}},p.sub)
+        React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",letterSpacing:1,textTransform:"uppercase",marginTop:2}},p.sub)
       )
     ),
     p.right&&React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},p.right)
@@ -304,16 +305,16 @@ function Combo(p){
   return React.createElement("div",null,
     // Tap target — looks like an input, opens modal on tap
     React.createElement("div",{onClick:openModal,style:{
-      width:"100%",background:"#060B14",
-      border:"1.5px solid "+(p.err?"#FF1744":"#253550"),
+      width:"100%",background:"#0F1535",
+      border:"1.5px solid "+(p.err?"#FF1744":"rgba(255,255,255,0.6)"),
       borderRadius:10,padding:"14px 16px",minHeight:52,
       display:"flex",alignItems:"center",justifyContent:"space-between",
       cursor:p.disabled?"not-allowed":"pointer",
       opacity:p.disabled?0.4:1,boxSizing:"border-box"
     }},
       React.createElement("span",{style:{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
-        color:p.value?"#FFFFFF":"#546580",fontSize:16}},p.value||p.placeholder),
-      React.createElement("span",{style:{color:"#546580",marginLeft:8,fontSize:18,flexShrink:0,lineHeight:1}},"\u25be")
+        color:p.value?"#FFFFFF":"rgba(255,255,255,0.5)",fontSize:16}},p.value||p.placeholder),
+      React.createElement("span",{style:{color:"rgba(255,255,255,0.55)",marginLeft:8,fontSize:18,flexShrink:0,lineHeight:1}},"\u25be")
     ),
     // Full-screen overlay modal
     open&&React.createElement("div",{style:{
@@ -322,24 +323,24 @@ function Combo(p){
       display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto"
     }},
       // Search header
-      React.createElement("div",{style:{background:"#0D1524",borderBottom:"1px solid #253550",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",flexShrink:0}},
+      React.createElement("div",{style:{background:"#0C0E24",borderBottom:"1px solid #1E3A5F",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",flexShrink:0}},
         React.createElement("input",{value:q,onChange:function(e){setQ(e.target.value);},
           placeholder:"Search or type a value...",autoFocus:true,
           autoComplete:"off",autoCorrect:"off",autoCapitalize:"none",spellCheck:false,
-          style:{flex:1,background:"#060B14",border:"1.5px solid #253550",borderRadius:9,
+          style:{flex:1,background:"#0F1535",border:"1.5px solid rgba(255,255,255,0.6)",borderRadius:9,
             padding:"12px 14px",color:"#FFFFFF",fontSize:16,minHeight:48,fontFamily:"inherit"}}),
-        React.createElement("button",{onClick:close,style:{background:"#1E2E44",color:"#FFFFFF",border:"none",
+        React.createElement("button",{onClick:close,style:{background:"#1A3555",color:"#FFFFFF",border:"none",
           borderRadius:9,width:48,height:48,fontSize:20,cursor:"pointer",fontFamily:"inherit",flexShrink:0}},"\u2715")
       ),
       // Count bar
-      React.createElement("div",{style:{padding:"8px 16px",fontSize:11,color:"#8899AA",
-        textTransform:"uppercase",letterSpacing:0.9,background:"#080C16",flexShrink:0}},
+      React.createElement("div",{style:{padding:"8px 16px",fontSize:11,color:"#7EC8E8",
+        textTransform:"uppercase",letterSpacing:0.9,background:"#14162C",flexShrink:0}},
         q?(filtered.length+" matches for '"+q+"'"):(filtered.length+" options available")
       ),
       // Manual entry row — shown when user has typed something not in list
       q&&!hasExactMatch&&React.createElement("div",{onClick:function(){select(q);},style:{
-        padding:"15px 16px",background:"rgba(245,166,35,0.08)",
-        borderBottom:"1px solid #253550",fontSize:14,color:"#F5A623",
+        padding:"15px 16px",background:"rgba(0,200,255,0.08)",
+        borderBottom:"1px solid #1E3A5F",fontSize:14,color:"#00C8FF",
         cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",gap:10
       }},
         React.createElement("span",{style:{fontSize:20,lineHeight:1}},"\u270e"),
@@ -347,28 +348,28 @@ function Combo(p){
       ),
       // Scrollable options list
       React.createElement("div",{style:{overflowY:"auto",flex:1,WebkitOverflowScrolling:"touch"}},
-        filtered.length===0&&React.createElement("div",{style:{padding:"28px 16px",color:"#546580",fontSize:14,textAlign:"center"}},
+        filtered.length===0&&React.createElement("div",{style:{padding:"28px 16px",color:"rgba(255,255,255,0.55)",fontSize:14,textAlign:"center"}},
           q?"No matches — use manual entry above":"No options available"
         ),
         filtered.map(function(opt,i){
           var sel=opt===p.value;
           return React.createElement("div",{key:i,onClick:function(){select(opt);},style:{
             padding:"16px 16px",fontSize:14,
-            color:sel?"#F5A623":"#FFFFFF",
+            color:sel?"#00C8FF":"#FFFFFF",
             background:sel?"rgba(245,166,35,0.07)":"transparent",
-            borderBottom:"1px solid #1A2840",cursor:"pointer",
+            borderBottom:"1px solid #152038",cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"space-between",
             minHeight:52
           }},
             React.createElement("span",{style:{lineHeight:1.4}},opt),
-            sel&&React.createElement("span",{style:{color:"#F5A623",fontSize:18,flexShrink:0}},"\u2713")
+            sel&&React.createElement("span",{style:{color:"#00C8FF",fontSize:18,flexShrink:0}},"\u2713")
           );
         })
       ),
       // Cancel button
-      React.createElement("div",{style:{padding:"12px 16px",background:"#0D1524",borderTop:"1px solid #253550",flexShrink:0}},
+      React.createElement("div",{style:{padding:"12px 16px",background:"#0C0E24",borderTop:"1px solid #1E3A5F",flexShrink:0}},
         React.createElement("button",{onClick:close,style:{width:"100%",background:"transparent",
-          color:"#FFFFFF",border:"1px solid #253550",borderRadius:10,padding:"15px",
+          color:"#FFFFFF",border:"1px solid rgba(255,255,255,0.4)",borderRadius:10,padding:"15px",
           fontSize:15,cursor:"pointer",fontFamily:"inherit",minHeight:52}},"Cancel")
       )
     )
@@ -421,7 +422,7 @@ function App(){
   var [qr,setQr]=useState("");
   var [cp,setCp]=useState(false);
 
-  function blankForm(){return{badge:"",name:"",discipline:"",areaLv1:"",areaLv2:"",activityId:"",type:"",severity:"",incidentDate:nowLocal(),description:"",resources:"",impact:"",action:""};}
+  function blankForm(){return{badge:"",name:"",discipline:"",areaLv1:"",areaLv2:"",activityId:"",type:"",incidentDate:nowLocal(),description:"",resources:"",impact:"",action:""};}
   var [form,setForm]=useState(blankForm());
   var [err,setErr]=useState({});
   var [busy,setBusy]=useState(false);
@@ -503,7 +504,7 @@ function App(){
 
   useEffect(function(){if(tab==="share")loadQR();},[tab]);
   async function loadQR(){
-    try{var mod=await import("https://esm.sh/qrcode@1.5.3");var QR=mod.default||mod;var d=await QR.toDataURL(window.location.href,{width:230,margin:2,color:{dark:"#080C16",light:"#F0F4F8"}});setQr(d);}catch(e){}
+    try{var mod=await import("https://esm.sh/qrcode@1.5.3");var QR=mod.default||mod;var d=await QR.toDataURL(window.location.href,{width:230,margin:2,color:{dark:"#14162C",light:"#F0F4F8"}});setQr(d);}catch(e){}
   }
 
   function saveSetting(id,list){if(db)db.collection("settings").doc(id).set({items:list});}
@@ -528,7 +529,6 @@ function App(){
     if(!form.areaLv1.trim())e.areaLv1="Required";
     if(!form.areaLv2.trim())e.areaLv2="Required";
     if(!form.type.trim())e.type="Required";
-    if(!form.severity)e.severity="Select a severity level";
     if(!form.incidentDate)e.incidentDate="Required";
     if(form.description.trim().length<10)e.description="Minimum 10 characters required";
     setErr(e);return!Object.keys(e).length;
@@ -542,7 +542,7 @@ function App(){
         badge:form.badge.trim(),name:form.name.trim(),discipline:form.discipline.trim(),
         areaLv1:form.areaLv1.trim(),areaLv2:form.areaLv2.trim(),
         activityId:form.activityId.trim(),
-        type:form.type.trim(),severity:form.severity,
+        type:form.type.trim(),
         incidentDate:form.incidentDate,description:form.description.trim(),
         resources:form.resources.trim(),impact:form.impact.trim(),action:form.action.trim(),
         timestamp:Date.now(),status:"Open"
@@ -566,7 +566,7 @@ function App(){
       setBulkConfirm(false);
     }catch(e){alert("Bulk delete failed: "+e.message);}
   }
-  function resetFilters(){setFsev("All");setFsta("All");setFLv1("All");setFDisc("All");setFType("All");setFromDate("");setToDate("");}
+  function resetFilters(){setFsta("All");setFLv1("All");setFDisc("All");setFType("All");setFromDate("");setToDate("");}
 
   // Lv1/Lv2 cascade
   var selectedLv1=findLv1(form.areaLv1);
@@ -581,7 +581,6 @@ function App(){
 
   var detail=dis.find(function(d){return d.id===did;});
   var filtered=dis.filter(function(d){
-    if(fsev!=="All"&&d.severity!==fsev)return false;
     if(fsta!=="All"&&d.status!==fsta)return false;
     if(fLv1!=="All"&&d.areaLv1!==fLv1)return false;
     if(fDisc!=="All"&&d.discipline!==fDisc)return false;
@@ -590,13 +589,12 @@ function App(){
     if(toDate&&d.incidentDate&&d.incidentDate>(toDate+"T23:59"))return false;
     return true;
   });
-  var hasActiveFilter=fsev!=="All"||fsta!=="All"||fLv1!=="All"||fDisc!=="All"||fType!=="All"||fromDate||toDate;
-  var stats={total:dis.length,open:dis.filter(function(d){return d.status==="Open";}).length,crit:dis.filter(function(d){return d.severity==="Critical";}).length,res:dis.filter(function(d){return d.status==="Resolved";}).length};
-  var sevData=SEVERITIES.map(function(s){return{name:s,v:dis.filter(function(d){return d.severity===s;}).length,c:SEV[s].c};}).filter(function(s){return s.v>0;});
+  var hasActiveFilter=fsta!=="All"||fLv1!=="All"||fDisc!=="All"||fType!=="All"||fromDate||toDate;
+  var stats={total:dis.length,open:dis.filter(function(d){return d.status==="Open";}).length,inprog:dis.filter(function(d){return d.status==="In Progress";}).length,res:dis.filter(function(d){return d.status==="Resolved";}).length};
 
-  var card={background:"#0F1828",border:"1px solid #253550",borderRadius:12,padding:"14px 16px"};
+  var card={background:"#1C2248",border:"1px solid rgba(255,255,255,0.4)",borderRadius:12,padding:"14px 16px"};
   var secT={fontSize:11,color:"#FFFFFF",textTransform:"uppercase",letterSpacing:1,marginBottom:10,fontWeight:600};
-  var sfSel={fontSize:14,background:"#060B14",border:"1px solid #253550",borderRadius:9,padding:"12px 14px",color:"#FFFFFF",width:"100%",appearance:"none",fontFamily:"inherit",cursor:"pointer",minHeight:48};
+  var sfSel={fontSize:14,background:"#0F1535",border:"1px solid rgba(255,255,255,0.4)",borderRadius:9,padding:"12px 14px",color:"#FFFFFF",width:"100%",appearance:"none",fontFamily:"inherit",cursor:"pointer",minHeight:48};
   var OffBar=!online?React.createElement("div",{className:"offline-bar"},"OFFLINE — Reports will sync when reconnected"):null;
 
   // Admin button state
@@ -604,72 +602,71 @@ function App(){
   if(authState==="loading"||authState==="checking"){
     adminBtn=React.createElement("div",{className:"spinner"});
   }else if(authState==="admin"){
-    adminBtn=React.createElement("button",{style:{background:"rgba(245,166,35,0.12)",color:"#F5A623",border:"1px solid rgba(245,166,35,0.4)",borderRadius:8,padding:"8px 13px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"},onClick:function(){setView("admin");}},"\uD83D\uDCCA Dashboard");
+    adminBtn=React.createElement("button",{style:{background:"rgba(0,200,255,0.12)",color:"#00C8FF",border:"1px solid rgba(0,200,255,0.4)",borderRadius:8,padding:"8px 13px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"},onClick:function(){setView("admin");}},"\uD83D\uDCCA Dashboard");
   }else if(authState==="denied"){
     adminBtn=React.createElement("button",{style:{background:"rgba(255,23,68,0.1)",color:"#FF1744",border:"1px solid rgba(255,23,68,0.3)",borderRadius:8,padding:"8px 13px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:doSignOut},"Not authorised");
   }else{
-    adminBtn=React.createElement("button",{style:{background:"transparent",color:"#FFFFFF",border:"1px solid #253550",borderRadius:8,padding:"8px 13px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:signIn},"\uD83D\uDD10 Admin");
+    adminBtn=React.createElement("button",{style:{background:"transparent",color:"#FFFFFF",border:"1px solid rgba(255,255,255,0.4)",borderRadius:8,padding:"8px 13px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:signIn},"\uD83D\uDD10 Admin");
   }
 
   // ── SUCCESS ──────────────────────────────────────────────────────────
-  if(view==="success") return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}},
+  if(view==="success") return React.createElement("div",{style:{minHeight:"100vh",background:"#14162C",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}},
     React.createElement("div",{style:{width:88,height:88,background:"rgba(0,230,118,0.1)",border:"2px solid #00E676",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:28,animation:"checkPop 0.4s cubic-bezier(.34,1.56,.64,1) forwards"}},
       React.createElement("svg",{width:40,height:40,viewBox:"0 0 40 40",fill:"none"},React.createElement("path",{d:"M8 20l9 9 15-15",stroke:"#00E676",strokeWidth:3.5,strokeLinecap:"round",strokeLinejoin:"round"}))
     ),
     React.createElement("div",{style:{fontSize:24,fontWeight:700,color:"#FFFFFF",marginBottom:10}},"Report Submitted"),
-    React.createElement("div",{style:{color:"#8899AA",lineHeight:1.8,marginBottom:32,fontSize:15}},"Logged to Firebase and visible\nto the project team in real time."),
-    React.createElement("button",{style:{width:"100%",maxWidth:300,background:"#F5A623",color:"#000",border:"none",borderRadius:12,padding:"16px",fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:54},onClick:function(){setView("form");setForm(blankForm());}},"Submit Another Report"),
-    React.createElement("div",{style:{fontSize:12,color:"#253550",marginTop:14}},"\uD83D\uDD12 Admin access via Google Sign-In only")
+    React.createElement("div",{style:{color:"#7EC8E8",lineHeight:1.8,marginBottom:32,fontSize:15}},"Logged to Firebase and visible\nto the project team in real time."),
+    React.createElement("button",{style:{width:"100%",maxWidth:300,background:"#00C8FF",color:"#000",border:"none",borderRadius:12,padding:"16px",fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:54},onClick:function(){setView("form");setForm(blankForm());}},"Submit Another Report"),
+    React.createElement("div",{style:{fontSize:12,color:"#4A7A9A",marginTop:14}},"\uD83D\uDD12 Admin access via Google Sign-In only")
   );
 
   // ── NOT AUTHORIZED ───────────────────────────────────────────────────
-  if(authState==="denied"&&view==="admin") return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}},
+  if(authState==="denied"&&view==="admin") return React.createElement("div",{style:{minHeight:"100vh",background:"#14162C",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}},
     React.createElement("div",{style:{fontSize:48,marginBottom:20}},"\uD83D\uDEAB"),
     React.createElement("div",{style:{fontSize:20,fontWeight:700,color:"#FF1744",marginBottom:10}},"Access Denied"),
-    React.createElement("div",{style:{fontSize:14,color:"#8899AA",marginBottom:8,lineHeight:1.7}},"Your account is not authorised."),
-    currentUser&&React.createElement("div",{style:{fontSize:12,color:"#253550",marginBottom:28,fontFamily:"monospace"}},currentUser.email),
-    React.createElement("button",{onClick:doSignOut,style:{background:"transparent",color:"#8899AA",border:"1px solid #253550",borderRadius:10,padding:"13px 28px",fontSize:14,cursor:"pointer",fontFamily:"inherit"}},"Sign Out"),
-    React.createElement("button",{onClick:function(){setView("form");},style:{background:"transparent",color:"#546580",border:"none",padding:"10px",fontSize:13,cursor:"pointer",fontFamily:"inherit",marginTop:8}},"Back to Form")
+    React.createElement("div",{style:{fontSize:14,color:"#7EC8E8",marginBottom:8,lineHeight:1.7}},"Your account is not authorised."),
+    currentUser&&React.createElement("div",{style:{fontSize:12,color:"#4A7A9A",marginBottom:28,fontFamily:"monospace"}},currentUser.email),
+    React.createElement("button",{onClick:doSignOut,style:{background:"transparent",color:"#7EC8E8",border:"1px solid rgba(255,255,255,0.4)",borderRadius:10,padding:"13px 28px",fontSize:14,cursor:"pointer",fontFamily:"inherit"}},"Sign Out"),
+    React.createElement("button",{onClick:function(){setView("form");},style:{background:"transparent",color:"rgba(255,255,255,0.55)",border:"none",padding:"10px",fontSize:13,cursor:"pointer",fontFamily:"inherit",marginTop:8}},"Back to Form")
   );
 
   // ── PIN GATE (Google Sign-In only) ───────────────────────────────────
-  if(view==="pingate") return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28}},
-    React.createElement("div",{style:{width:72,height:72,background:"rgba(245,166,35,0.1)",border:"2px solid rgba(245,166,35,0.4)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,marginBottom:28}},"\uD83D\uDD11"),
+  if(view==="pingate") return React.createElement("div",{style:{minHeight:"100vh",background:"#14162C",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28}},
+    React.createElement("div",{style:{width:72,height:72,background:"rgba(0,200,255,0.1)",border:"2px solid rgba(0,200,255,0.4)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,marginBottom:28}},"\uD83D\uDD11"),
     React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#FFFFFF",marginBottom:8}},"Admin Access"),
-    React.createElement("div",{style:{fontSize:14,color:"#8899AA",marginBottom:32,textAlign:"center",lineHeight:1.6}},"Sign in with your authorised\nGoogle account to continue"),
+    React.createElement("div",{style:{fontSize:14,color:"#7EC8E8",marginBottom:32,textAlign:"center",lineHeight:1.6}},"Sign in with your authorised\nGoogle account to continue"),
     React.createElement("button",{onClick:signIn,style:{width:"100%",maxWidth:320,background:"#FFFFFF",color:"#111",border:"none",borderRadius:12,padding:"16px",fontSize:15,fontWeight:600,cursor:"pointer",fontFamily:"inherit",minHeight:54,display:"flex",alignItems:"center",justifyContent:"center",gap:12}},
       React.createElement("svg",{width:20,height:20,viewBox:"0 0 48 48"},React.createElement("path",{fill:"#EA4335",d:"M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"}),React.createElement("path",{fill:"#4285F4",d:"M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"}),React.createElement("path",{fill:"#FBBC05",d:"M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"}),React.createElement("path",{fill:"#34A853",d:"M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"})),
       "Sign in with Google"
     ),
-    React.createElement("button",{onClick:function(){setView("form");},style:{background:"transparent",color:"#546580",border:"none",padding:"12px",fontSize:13,cursor:"pointer",fontFamily:"inherit",marginTop:12}},"Back to Form")
+    React.createElement("button",{onClick:function(){setView("form");},style:{background:"transparent",color:"rgba(255,255,255,0.55)",border:"none",padding:"12px",fontSize:13,cursor:"pointer",fontFamily:"inherit",marginTop:12}},"Back to Form")
   );
 
   // ── DETAIL VIEW ──────────────────────────────────────────────────────
   if(view==="detail"&&detail){
     var d=detail;
-    return React.createElement("div",{className:"fade",style:{minHeight:"100vh",background:"#080C16",paddingBottom:40}},
+    return React.createElement("div",{className:"fade",style:{minHeight:"100vh",background:"#14162C",paddingBottom:40}},
       OffBar,
-      React.createElement(Hdr,{title:"Disruption Detail",sub:PROJECT_NAME+" · Admin",onBack:function(){setView("admin");},accent:"#F5A623"}),
+      React.createElement(Hdr,{title:"Disruption Detail",sub:PROJECT_NAME+" · Admin",onBack:function(){setView("admin");},accent:"#00C8FF"}),
       React.createElement("div",{style:{padding:16}},
-        React.createElement("div",{style:{...card,border:"1.5px solid "+SEV[d.severity].bd,marginBottom:12}},
+        React.createElement("div",{style:{...card,marginBottom:12}},
           React.createElement("div",{style:{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}},
-            React.createElement(Pill,{label:d.severity,...SEV[d.severity]}),
             React.createElement(Pill,{label:d.status,...STA[d.status]})
           ),
           React.createElement("h2",{style:{fontSize:18,fontWeight:700,color:"#FFFFFF",marginBottom:6,lineHeight:1.3}},d.type),
-          React.createElement("div",{style:{fontSize:13,color:"#8899AA",marginBottom:4}},d.areaLv1),
+          React.createElement("div",{style:{fontSize:13,color:"#7EC8E8",marginBottom:4}},d.areaLv1),
           React.createElement("div",{style:{fontSize:14,color:"#CBD5E1",marginBottom:10,fontWeight:500}},d.areaLv2),
-          d.activityId&&React.createElement("div",{style:{fontSize:12,color:"#F5A623",fontFamily:"monospace",marginBottom:8}},"Activity: "+d.activityId),
-          React.createElement("div",{style:{borderTop:"1px solid #253550",paddingTop:12,display:"flex",flexDirection:"column",gap:6}},
-            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:13}},React.createElement("span",{style:{color:"#8899AA"}},"Incident Date"),React.createElement("span",{style:{color:"#FFFFFF",fontWeight:600}},fmtInc(d.incidentDate))),
-            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:13}},React.createElement("span",{style:{color:"#8899AA"}},"Submitted"),React.createElement("span",{style:{color:"#8899AA"}},fmtDate(d.timestamp)))
+          d.activityId&&React.createElement("div",{style:{fontSize:12,color:"#00C8FF",fontFamily:"monospace",marginBottom:8}},"Activity: "+d.activityId),
+          React.createElement("div",{style:{borderTop:"1px solid #1E3A5F",paddingTop:12,display:"flex",flexDirection:"column",gap:6}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:13}},React.createElement("span",{style:{color:"#7EC8E8"}},"Incident Date"),React.createElement("span",{style:{color:"#FFFFFF",fontWeight:600}},fmtInc(d.incidentDate))),
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:13}},React.createElement("span",{style:{color:"#7EC8E8"}},"Submitted"),React.createElement("span",{style:{color:"#7EC8E8"}},fmtDate(d.timestamp)))
           )
         ),
         React.createElement("div",{style:{...card,marginBottom:12}},
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
             ...[["Badge",d.badge],["Name",d.name],["Discipline",d.discipline],["Ref",d.id.slice(-8).toUpperCase()]].map(function(x){
               return React.createElement("div",{key:x[0]},
-                React.createElement("div",{style:{fontSize:10,color:"#8899AA",textTransform:"uppercase",letterSpacing:0.9,marginBottom:5}},x[0]),
+                React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",textTransform:"uppercase",letterSpacing:0.9,marginBottom:5}},x[0]),
                 React.createElement("div",{style:{fontSize:14,color:"#FFFFFF",fontWeight:600}},x[1])
               );
             })
@@ -686,7 +683,7 @@ function App(){
           React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
             ["Open","In Progress","Resolved"].map(function(s){
               return React.createElement("button",{key:s,onClick:function(){chgSta(d.id,s);setView("admin");},
-                style:{padding:"14px 16px",borderRadius:10,border:"1.5px solid "+(d.status===s?STA[s].bd:"#253550"),background:d.status===s?STA[s].bg:"#0A1220",color:d.status===s?STA[s].c:"#FFFFFF",cursor:"pointer",fontSize:14,fontWeight:d.status===s?700:400,textAlign:"left",transition:"all 0.15s",fontFamily:"inherit",minHeight:52}},
+                style:{padding:"14px 16px",borderRadius:10,border:"1.5px solid "+(d.status===s?STA[s].bd:"rgba(255,255,255,0.3)"),background:d.status===s?STA[s].bg:"#141830",color:d.status===s?STA[s].c:"#FFFFFF",cursor:"pointer",fontSize:14,fontWeight:d.status===s?700:400,textAlign:"left",transition:"all 0.15s",fontFamily:"inherit",minHeight:52}},
                 (s==="Open"?"● ":s==="In Progress"?"◆ ":"✓ ")+s+(d.status===s?" — current":"")
               );
             })
@@ -698,22 +695,22 @@ function App(){
 
   // ── ADMIN DASHBOARD ──────────────────────────────────────────────────
   if(view==="admin"){
-    return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",paddingBottom:32}},
+    return React.createElement("div",{style:{minHeight:"100vh",background:"#14162C",paddingBottom:32}},
       OffBar,
-      React.createElement(Hdr,{title:"Project Dashboard",sub:PROJECT_NAME+" · Admin",accent:"#F5A623",
+      React.createElement(Hdr,{title:"Project Dashboard",sub:PROJECT_NAME+" · Admin",accent:"#00C8FF",
         right:[
           React.createElement("button",{key:"csv",style:{background:"rgba(0,230,118,0.1)",color:"#00E676",border:"1px solid rgba(0,230,118,0.35)",borderRadius:9,padding:"8px 11px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"},onClick:function(){exportCSV(dis);}},"\u2193 CSV"),
-          React.createElement("button",{key:"out",style:{background:"transparent",color:"#FFFFFF",border:"1px solid #253550",borderRadius:9,padding:"8px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:doSignOut},"Sign out")
+          React.createElement("button",{key:"out",style:{background:"transparent",color:"#FFFFFF",border:"1px solid rgba(255,255,255,0.4)",borderRadius:9,padding:"8px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"},onClick:doSignOut},"Sign out")
         ]
       }),
-      currentUser&&React.createElement("div",{style:{background:"#0D1524",padding:"7px 16px",borderBottom:"1px solid #253550",display:"flex",alignItems:"center",gap:8}},
+      currentUser&&React.createElement("div",{style:{background:"#0C0E24",padding:"7px 16px",borderBottom:"1px solid #1E3A5F",display:"flex",alignItems:"center",gap:8}},
         currentUser.photoURL&&React.createElement("img",{src:currentUser.photoURL,style:{width:20,height:20,borderRadius:"50%"}}),
-        React.createElement("span",{style:{fontSize:11,color:"#8899AA"}},"Signed in as "),
+        React.createElement("span",{style:{fontSize:11,color:"#7EC8E8"}},"Signed in as "),
         React.createElement("span",{style:{fontSize:11,color:"#FFFFFF",fontFamily:"monospace"}},currentUser.email)
       ),
       // Stats
       React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,padding:"14px 14px 0"}},
-        ...[["Total",stats.total,"#FFFFFF"],["Open",stats.open,"#FFD600"],["Critical",stats.crit,"#FF1744"],["Resolved",stats.res,"#00E676"]].map(function(s){
+        ...[["Total",stats.total,"#FFFFFF"],["Open",stats.open,"#FFD600"],["In Progress",stats.inprog,"#40C4FF"],["Resolved",stats.res,"#00E676"]].map(function(s){
           return React.createElement("div",{key:s[0],style:card},
             React.createElement("div",{style:{fontSize:32,fontWeight:700,fontFamily:"monospace",color:s[2],lineHeight:1}},s[1]),
             React.createElement("div",{style:{fontSize:10,color:"#FFFFFF",marginTop:6,textTransform:"uppercase",letterSpacing:0.9}},s[0])
@@ -721,9 +718,9 @@ function App(){
         })
       ),
       // Tabs
-      React.createElement("div",{style:{display:"flex",borderBottom:"1px solid #253550",background:"#0D1524",marginTop:14,position:"sticky",top:60,zIndex:9}},
+      React.createElement("div",{style:{display:"flex",borderBottom:"1px solid #1E3A5F",background:"#0C0E24",marginTop:14,position:"sticky",top:60,zIndex:9}},
         [["list","Records"],["analytics","Analytics"],["data","Data"],["settings","Settings"],["share","QR"]].map(function(t){
-          return React.createElement("button",{key:t[0],onClick:function(){setTab(t[0]);},style:{flex:1,padding:"13px 2px",fontSize:10,textAlign:"center",border:"none",background:"transparent",cursor:"pointer",color:tab===t[0]?"#F5A623":"#FFFFFF",borderBottom:tab===t[0]?"2px solid #F5A623":"2px solid transparent",letterSpacing:0.7,textTransform:"uppercase",fontWeight:tab===t[0]?700:500,fontFamily:"inherit",minHeight:48}},t[1]);
+          return React.createElement("button",{key:t[0],onClick:function(){setTab(t[0]);},style:{flex:1,padding:"13px 2px",fontSize:10,textAlign:"center",border:"none",background:"transparent",cursor:"pointer",color:tab===t[0]?"#00C8FF":"#FFFFFF",borderBottom:tab===t[0]?"2px solid #00C8FF":"2px solid transparent",letterSpacing:0.7,textTransform:"uppercase",fontWeight:tab===t[0]?700:500,fontFamily:"inherit",minHeight:48}},t[1]);
         })
       ),
       React.createElement("div",{style:{padding:14}},
@@ -742,21 +739,18 @@ function App(){
               React.createElement("div",{style:{fontSize:11,color:"#FFFFFF",marginBottom:6,textTransform:"uppercase",letterSpacing:0.8}},"Incident Date Range"),
               React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},
                 React.createElement("div",null,
-                  React.createElement("div",{style:{fontSize:10,color:"#8899AA",marginBottom:4}},"From"),
+                  React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",marginBottom:4}},"From"),
                   React.createElement("input",{type:"date",value:fromDate,onChange:function(e){setFromDate(e.target.value);},style:{...sfSel,padding:"10px 12px",minHeight:44}})
                 ),
                 React.createElement("div",null,
-                  React.createElement("div",{style:{fontSize:10,color:"#8899AA",marginBottom:4}},"To"),
+                  React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",marginBottom:4}},"To"),
                   React.createElement("input",{type:"date",value:toDate,onChange:function(e){setToDate(e.target.value);},style:{...sfSel,padding:"10px 12px",minHeight:44}})
                 )
               )
             ),
-            // Severity + Status
+            // Status + Discipline
             React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}},
-              React.createElement("select",{style:sfSel,value:fsev,onChange:function(e){setFsev(e.target.value);}},
-                React.createElement("option",{value:"All"},"All Severities"),
-                SEVERITIES.map(function(s){return React.createElement("option",{key:s},s);})
-              ),
+
               React.createElement("select",{style:sfSel,value:fsta,onChange:function(e){setFsta(e.target.value);}},
                 ["All","Open","In Progress","Resolved"].map(function(s){return React.createElement("option",{key:s},s==="All"?"All Statuses":s);})
               )
@@ -779,59 +773,58 @@ function App(){
           ),
 
           // ── Export bar ───────────────────────────────────────────
-          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,padding:"10px 14px",background:"#0D1524",borderRadius:10,border:"1px solid #253550"}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,padding:"10px 14px",background:"#0C0E24",borderRadius:10,border:"1px solid rgba(255,255,255,0.4)"}},
             React.createElement("div",null,
               React.createElement("div",{style:{fontSize:14,color:"#FFFFFF",fontWeight:600}},filtered.length+" record"+(filtered.length!==1?"s":"")+" selected"),
-              React.createElement("div",{style:{fontSize:11,color:"#8899AA",marginTop:2}},hasActiveFilter?"Filtered from "+dis.length+" total":"All records shown")
+              React.createElement("div",{style:{fontSize:11,color:"#7EC8E8",marginTop:2}},hasActiveFilter?"Filtered from "+dis.length+" total":"All records shown")
             ),
             React.createElement("button",{
               onClick:function(){exportCSV(filtered);},
               disabled:filtered.length===0,
-              style:{background:filtered.length>0?"rgba(0,230,118,0.12)":"rgba(255,255,255,0.04)",color:filtered.length>0?"#00E676":"#546580",border:"1px solid "+(filtered.length>0?"rgba(0,230,118,0.35)":"#253550"),borderRadius:8,padding:"9px 14px",fontSize:13,fontWeight:700,cursor:filtered.length>0?"pointer":"not-allowed",fontFamily:"inherit"}
+              style:{background:filtered.length>0?"rgba(0,230,118,0.12)":"rgba(255,255,255,0.04)",color:filtered.length>0?"#00E676":"#4A7A9A",border:"1px solid "+(filtered.length>0?"rgba(0,230,118,0.35)":"rgba(255,255,255,0.2)"),borderRadius:8,padding:"9px 14px",fontSize:13,fontWeight:700,cursor:filtered.length>0?"pointer":"not-allowed",fontFamily:"inherit"}
             },"\u2193 Export CSV")
           ),
 
           // ── Records list ─────────────────────────────────────────
-          loading&&React.createElement("div",{style:{textAlign:"center",padding:"40px 0",color:"#8899AA"}},"Loading..."),
-          !loading&&filtered.length===0&&React.createElement("div",{style:{textAlign:"center",padding:"40px 0",color:"#8899AA"}},
+          loading&&React.createElement("div",{style:{textAlign:"center",padding:"40px 0",color:"#7EC8E8"}},"Loading..."),
+          !loading&&filtered.length===0&&React.createElement("div",{style:{textAlign:"center",padding:"40px 0",color:"#7EC8E8"}},
             React.createElement("div",{style:{fontSize:36,marginBottom:10}},"\uD83D\uDCCB"),
             React.createElement("div",{style:{fontSize:14}},dis.length===0?"No disruptions reported yet":"No records match the filter"),
-            dis.length>0&&hasActiveFilter&&React.createElement("button",{onClick:resetFilters,style:{marginTop:12,background:"transparent",color:"#F5A623",border:"1px solid rgba(245,166,35,0.3)",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer",fontFamily:"inherit"}},"Clear filters")
+            dis.length>0&&hasActiveFilter&&React.createElement("button",{onClick:resetFilters,style:{marginTop:12,background:"transparent",color:"#00C8FF",border:"1px solid rgba(0,200,255,0.3)",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer",fontFamily:"inherit"}},"Clear filters")
           ),
           filtered.map(function(d){
             var isDeleting=deleteConfirm===d.id;
-            return React.createElement("div",{key:d.id,className:"fade",style:{...card,border:"1px solid "+(d.severity==="Critical"?SEV.Critical.bd:"#253550"),marginBottom:12}},
+            return React.createElement("div",{key:d.id,className:"fade",style:{...card,marginBottom:12}},
               // Card header — tappable to open detail
               React.createElement("div",{onClick:function(){setDid(d.id);setView("detail");},style:{cursor:"pointer"}},
                 React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}},
                   React.createElement("div",{style:{flex:1,paddingRight:10}},
                     React.createElement("div",{style:{fontSize:14,fontWeight:600,color:"#FFFFFF",lineHeight:1.3,marginBottom:3}},d.type),
-                    React.createElement("div",{style:{fontSize:11,color:"#8899AA"}},d.areaLv2||d.areaLv1," · "+timeAgo(d.timestamp))
+                    React.createElement("div",{style:{fontSize:11,color:"#7EC8E8"}},d.areaLv2||d.areaLv1," · "+timeAgo(d.timestamp))
                   ),
-                  React.createElement(Pill,{label:d.severity,...SEV[d.severity]})
                 ),
                 React.createElement("p",{style:{fontSize:13,color:"#CBD5E1",lineHeight:1.5,marginBottom:8}},d.description.length>80?d.description.slice(0,80)+"...":d.description),
-                React.createElement("div",{style:{fontSize:11,color:"#8899AA",marginBottom:6}},
+                React.createElement("div",{style:{fontSize:11,color:"#7EC8E8",marginBottom:6}},
                   "\uD83D\uDCC5 ",React.createElement("span",{style:{color:"#FFFFFF"}},fmtInc(d.incidentDate)),
-                  d.activityId&&React.createElement("span",{style:{marginLeft:10,color:"#F5A623",fontFamily:"monospace"}},d.activityId)
+                  d.activityId&&React.createElement("span",{style:{marginLeft:10,color:"#00C8FF",fontFamily:"monospace"}},d.activityId)
                 )
               ),
               // Card footer — status + actions
-              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8,borderTop:"1px solid #253550",flexWrap:"wrap",gap:6}},
+              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8,borderTop:"1px solid #1E3A5F",flexWrap:"wrap",gap:6}},
                 React.createElement("div",{style:{fontSize:12,color:"#FFFFFF"}},
-                  React.createElement("span",{style:{color:"#F5A623",fontFamily:"monospace",fontWeight:700}},"#"+d.badge)," · ",d.name
+                  React.createElement("span",{style:{color:"#00C8FF",fontFamily:"monospace",fontWeight:700}},"#"+d.badge)," · ",d.name
                 ),
                 React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
                   React.createElement(Pill,{label:d.status,...STA[d.status]}),
-                  !isDeleting&&React.createElement("button",{onClick:function(e){e.stopPropagation();setDeleteConfirm(d.id);},style:{background:"transparent",color:"#546580",border:"1px solid #253550",borderRadius:6,padding:"3px 9px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}},"\uD83D\uDDD1")
+                  !isDeleting&&React.createElement("button",{onClick:function(e){e.stopPropagation();setDeleteConfirm(d.id);},style:{background:"transparent",color:"rgba(255,255,255,0.55)",border:"1px solid rgba(255,255,255,0.4)",borderRadius:6,padding:"3px 9px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}},"\uD83D\uDDD1")
                 )
               ),
               // Inline delete confirmation
               isDeleting&&React.createElement("div",{style:{marginTop:10,padding:"10px 14px",background:"rgba(255,23,68,0.08)",border:"1px solid rgba(255,23,68,0.25)",borderRadius:8,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}},
                 React.createElement("span",{style:{fontSize:13,color:"#FF6B6B"}},"Delete this record?"),
                 React.createElement("div",{style:{display:"flex",gap:8}},
-                  React.createElement("button",{onClick:function(){deleteRecord(d.id);},style:{background:"#B91C1C",color:"#fff",border:"none",borderRadius:7,padding:"6px 14px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}},"Delete"),
-                  React.createElement("button",{onClick:function(){setDeleteConfirm(null);},style:{background:"transparent",color:"#8899AA",border:"1px solid #253550",borderRadius:7,padding:"6px 12px",fontSize:13,cursor:"pointer",fontFamily:"inherit"}},"Cancel")
+                  React.createElement("button",{onClick:function(){deleteRecord(d.id);},style:{background:"#003D99",color:"#fff",border:"none",borderRadius:7,padding:"6px 14px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}},"Delete"),
+                  React.createElement("button",{onClick:function(){setDeleteConfirm(null);},style:{background:"transparent",color:"#7EC8E8",border:"1px solid rgba(255,255,255,0.4)",borderRadius:7,padding:"6px 12px",fontSize:13,cursor:"pointer",fontFamily:"inherit"}},"Cancel")
                 )
               )
             );
@@ -851,26 +844,12 @@ function App(){
               );
             })
           ),
-          sevData.length>0&&React.createElement("div",{style:{...card,marginBottom:14}},
-            React.createElement("div",{style:secT},"By Severity"),
-            React.createElement("div",{style:{display:"flex",alignItems:"flex-end",gap:10,height:140,paddingBottom:28,position:"relative"}},
-              sevData.map(function(s,i){
-                var maxV=Math.max.apply(null,sevData.map(function(x){return x.v;}));
-                var pct=maxV>0?Math.round((s.v/maxV)*100):0;
-                return React.createElement("div",{key:i,style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",gap:4,height:"100%"}},
-                  React.createElement("div",{style:{fontSize:14,fontWeight:700,color:s.c,fontFamily:"monospace"}},s.v),
-                  React.createElement("div",{style:{width:"100%",height:pct+"%",background:s.c,borderRadius:"4px 4px 0 0",minHeight:4,opacity:0.75}}),
-                  React.createElement("div",{style:{position:"absolute",bottom:0,fontSize:10,color:"#FFFFFF",left:(i*(100/sevData.length)+(50/sevData.length))+"%",transform:"translateX(-50%)",whiteSpace:"nowrap"}},s.name)
-                );
-              })
-            )
-          ),
           React.createElement("div",{style:{...card,marginBottom:14}},
             React.createElement("div",{style:secT},"By Discipline"),
             disciplines.map(function(n){return{n:n,v:dis.filter(function(d){return d.discipline===n;}).length};}).filter(function(d){return d.v>0;}).sort(function(a,b){return b.v-a.v;}).map(function(d){
               return React.createElement("div",{key:d.n,style:{marginBottom:10}},
                 React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:5,fontSize:13}},React.createElement("span",{style:{color:"#FFFFFF"}},d.n),React.createElement("span",{style:{color:"#FFFFFF",fontWeight:700,fontFamily:"monospace"}},d.v)),
-                React.createElement("div",{style:{height:5,background:"#253550",borderRadius:3}},React.createElement("div",{style:{height:5,width:(d.v/dis.length*100)+"%",background:"#F5A623",borderRadius:3}}))
+                React.createElement("div",{style:{height:5,background:"#1E3A5F",borderRadius:3}},React.createElement("div",{style:{height:5,width:(d.v/dis.length*100)+"%",background:"#00C8FF",borderRadius:3}}))
               );
             })
           ),
@@ -879,7 +858,7 @@ function App(){
             AREAS_DATA.map(function(a){return{n:a.code+" - "+a.name,v:dis.filter(function(d){return d.areaLv1===a.code+" - "+a.name;}).length};}).filter(function(x){return x.v>0;}).sort(function(x,y){return y.v-x.v;}).map(function(x){
               return React.createElement("div",{key:x.n,style:{marginBottom:10}},
                 React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:5,fontSize:13}},React.createElement("span",{style:{color:"#FFFFFF"}},x.n),React.createElement("span",{style:{color:"#FFFFFF",fontWeight:700,fontFamily:"monospace"}},x.v)),
-                React.createElement("div",{style:{height:5,background:"#253550",borderRadius:3}},React.createElement("div",{style:{height:5,width:(x.v/dis.length*100)+"%",background:"#40C4FF",borderRadius:3}}))
+                React.createElement("div",{style:{height:5,background:"#1E3A5F",borderRadius:3}},React.createElement("div",{style:{height:5,width:(x.v/dis.length*100)+"%",background:"#40C4FF",borderRadius:3}}))
               );
             })
           )
@@ -894,32 +873,32 @@ function App(){
             React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}},
               React.createElement("div",{style:{textAlign:"center"}},
                 React.createElement("div",{style:{fontSize:28,fontWeight:700,color:"#FFFFFF",fontFamily:"monospace"}},dis.length),
-                React.createElement("div",{style:{fontSize:10,color:"#8899AA",marginTop:4,textTransform:"uppercase",letterSpacing:0.7}},"Total Records")
+                React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",marginTop:4,textTransform:"uppercase",letterSpacing:0.7}},"Total Records")
               ),
               React.createElement("div",{style:{textAlign:"center"}},
-                React.createElement("div",{style:{fontSize:28,fontWeight:700,color:"#F5A623",fontFamily:"monospace"}},
+                React.createElement("div",{style:{fontSize:28,fontWeight:700,color:"#00C8FF",fontFamily:"monospace"}},
                   (dis.length*0.8<1024?(dis.length*0.8).toFixed(0)+" KB":((dis.length*0.8)/1024).toFixed(2)+" MB")
                 ),
-                React.createElement("div",{style:{fontSize:10,color:"#8899AA",marginTop:4,textTransform:"uppercase",letterSpacing:0.7}},"Est. Storage")
+                React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",marginTop:4,textTransform:"uppercase",letterSpacing:0.7}},"Est. Storage")
               ),
               React.createElement("div",{style:{textAlign:"center"}},
                 React.createElement("div",{style:{fontSize:28,fontWeight:700,color:"#00E676",fontFamily:"monospace"}},
                   Math.max(0,1024-Math.round(dis.length*0.8/1024))+" MB"
                 ),
-                React.createElement("div",{style:{fontSize:10,color:"#8899AA",marginTop:4,textTransform:"uppercase",letterSpacing:0.7}},"Free Remaining")
+                React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",marginTop:4,textTransform:"uppercase",letterSpacing:0.7}},"Free Remaining")
               )
             ),
             // Storage bar
             React.createElement("div",{style:{marginBottom:6}},
-              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:11,color:"#8899AA",marginBottom:4}},
+              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:11,color:"#7EC8E8",marginBottom:4}},
                 React.createElement("span",null,"Usage"),
                 React.createElement("span",null,Math.min(100,(dis.length*0.8/1048576*100)).toFixed(3)+"% of 1 GB free limit")
               ),
-              React.createElement("div",{style:{height:6,background:"#253550",borderRadius:3}},
+              React.createElement("div",{style:{height:6,background:"#1E3A5F",borderRadius:3}},
                 React.createElement("div",{style:{height:6,width:Math.min(100,(dis.length*0.8/1048576*100))+"%",background:"#00E676",borderRadius:3,minWidth:4}})
               )
             ),
-            React.createElement("div",{style:{fontSize:11,color:"#546580",marginTop:8}},"Estimate based on ~800 bytes/record. Check Firebase Console → Firestore → Usage for exact figures.")
+            React.createElement("div",{style:{fontSize:11,color:"rgba(255,255,255,0.55)",marginTop:8}},"Estimate based on ~800 bytes/record. Check Firebase Console → Firestore → Usage for exact figures.")
           ),
 
           // ── Status breakdown ──────────────────────────────────────
@@ -949,7 +928,7 @@ function App(){
                 months[m]=(months[m]||0)+1;
               });
               var sorted=Object.keys(months).sort().slice(-6); // last 6 months
-              if(sorted.length===0)return React.createElement("div",{style:{fontSize:13,color:"#546580",textAlign:"center",padding:"10px 0"}},"No data yet");
+              if(sorted.length===0)return React.createElement("div",{style:{fontSize:13,color:"rgba(255,255,255,0.55)",textAlign:"center",padding:"10px 0"}},"No data yet");
               var maxV=Math.max.apply(null,sorted.map(function(m){return months[m];}));
               return React.createElement("div",null,
                 sorted.map(function(m){
@@ -957,10 +936,10 @@ function App(){
                   var label=new Date(m+"-02").toLocaleString("en-GB",{month:"short",year:"2-digit"});
                   return React.createElement("div",{key:m,style:{display:"flex",alignItems:"center",gap:10,marginBottom:8}},
                     React.createElement("div",{style:{fontSize:11,color:"#FFFFFF",width:44,flexShrink:0,textAlign:"right"}},label),
-                    React.createElement("div",{style:{flex:1,height:22,background:"#253550",borderRadius:4,overflow:"hidden"}},
-                      React.createElement("div",{style:{height:"100%",width:(v/maxV*100)+"%",background:"#F5A623",borderRadius:4,minWidth:4}})
+                    React.createElement("div",{style:{flex:1,height:22,background:"#1E3A5F",borderRadius:4,overflow:"hidden"}},
+                      React.createElement("div",{style:{height:"100%",width:(v/maxV*100)+"%",background:"#00C8FF",borderRadius:4,minWidth:4}})
                     ),
-                    React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#F5A623",fontFamily:"monospace",width:24,flexShrink:0}},v)
+                    React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#00C8FF",fontFamily:"monospace",width:24,flexShrink:0}},v)
                   );
                 })
               );
@@ -982,8 +961,8 @@ function App(){
             bulkConfirm&&React.createElement("div",{style:{background:"rgba(255,23,68,0.1)",border:"1px solid rgba(255,23,68,0.3)",borderRadius:9,padding:"12px 14px"}},
               React.createElement("div",{style:{fontSize:13,color:"#FF6B6B",marginBottom:12,fontWeight:600}},"⚠ This will permanently delete "+dis.filter(function(d){return d.status==="Resolved";}).length+" records. This cannot be undone."),
               React.createElement("div",{style:{display:"flex",gap:10}},
-                React.createElement("button",{onClick:bulkDeleteResolved,style:{flex:1,background:"#B91C1C",color:"#fff",border:"none",borderRadius:8,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}},"Confirm Delete"),
-                React.createElement("button",{onClick:function(){setBulkConfirm(false);},style:{flex:1,background:"transparent",color:"#8899AA",border:"1px solid #253550",borderRadius:8,padding:"12px",fontSize:14,cursor:"pointer",fontFamily:"inherit"}},"Cancel")
+                React.createElement("button",{onClick:bulkDeleteResolved,style:{flex:1,background:"#003D99",color:"#fff",border:"none",borderRadius:8,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}},"Confirm Delete"),
+                React.createElement("button",{onClick:function(){setBulkConfirm(false);},style:{flex:1,background:"transparent",color:"#7EC8E8",border:"1px solid rgba(255,255,255,0.4)",borderRadius:8,padding:"12px",fontSize:14,cursor:"pointer",fontFamily:"inherit"}},"Cancel")
               )
             )
           ),
@@ -996,16 +975,16 @@ function App(){
               ["Monitor reads / writes / storage","https://console.firebase.google.com/project/nfs-disruptions/firestore/usage"],
               ["Set budget alert (recommended)","https://console.firebase.google.com/project/nfs-disruptions/settings/billing"]
             ].map(function(x){
-              return React.createElement("a",{key:x[0],href:x[1],target:"_blank",rel:"noopener",style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid #1A2840",textDecoration:"none"}},
+              return React.createElement("a",{key:x[0],href:x[1],target:"_blank",rel:"noopener",style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid #152038",textDecoration:"none"}},
                 React.createElement("span",{style:{fontSize:13,color:"#FFFFFF"}},(x[0])),
-                React.createElement("span",{style:{fontSize:16,color:"#8899AA"}},"\u2197")
+                React.createElement("span",{style:{fontSize:16,color:"#7EC8E8"}},"\u2197")
               );
             })
           )
         ),
         tab==="settings"&&React.createElement("div",null,
-          React.createElement("div",{style:{...card,marginBottom:14,background:"rgba(245,166,35,0.05)",border:"1px solid rgba(245,166,35,0.2)"}},
-            React.createElement("div",{style:{...secT,color:"#F5A623"}},"Work Areas (Lv1 / Lv2)"),
+          React.createElement("div",{style:{...card,marginBottom:14,background:"rgba(245,166,35,0.05)",border:"1px solid rgba(0,200,255,0.2)"}},
+            React.createElement("div",{style:{...secT,color:"#00C8FF"}},"Work Areas (Lv1 / Lv2)"),
             React.createElement("div",{style:{fontSize:13,color:"#FFFFFF",lineHeight:1.7}},"Areas are loaded from the project data file (Data.xlsx). To update the area list, upload a revised file and regenerate the app.")
           ),
           React.createElement("div",{style:{...card,marginBottom:14}},
@@ -1020,26 +999,26 @@ function App(){
             React.createElement("div",{style:secT},"Admin Users (Google accounts)"),
             React.createElement("div",{style:{fontSize:12,color:"#FFFFFF",marginBottom:12,lineHeight:1.6}},"Only these Google accounts can access the dashboard."),
             React.createElement(EditableList,{items:admins.filter(function(e){return e!==BOOTSTRAP_ADMIN;}),placeholder:"email@example.com",onChange:function(l){saveAdmins([BOOTSTRAP_ADMIN,...l]);}}),
-            React.createElement("div",{style:{fontSize:11,color:"#546580",marginTop:8}},BOOTSTRAP_ADMIN+" is always an admin.")
+            React.createElement("div",{style:{fontSize:11,color:"rgba(255,255,255,0.55)",marginTop:8}},BOOTSTRAP_ADMIN+" is always an admin.")
           ),
           React.createElement("div",{style:{...card,background:"rgba(255,23,68,0.05)",border:"1px solid rgba(255,23,68,0.2)"}},
             React.createElement("div",{style:{fontSize:13,color:"#FF6B6B",marginBottom:8,fontWeight:600}},"Reset Disciplines & Types"),
             React.createElement("div",{style:{fontSize:12,color:"#FFFFFF",marginBottom:12,lineHeight:1.6}},"Restores original lists from Data.xlsx. Reports are not affected."),
-            React.createElement("button",{onClick:function(){saveDisc(DEFAULT_DISCIPLINES);saveTypes(DEFAULT_TYPES);},style:{background:"#B91C1C",color:"#fff",border:"none",borderRadius:9,padding:"12px 18px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:48}},"Reset to Defaults")
+            React.createElement("button",{onClick:function(){saveDisc(DEFAULT_DISCIPLINES);saveTypes(DEFAULT_TYPES);},style:{background:"#003D99",color:"#fff",border:"none",borderRadius:9,padding:"12px 18px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:48}},"Reset to Defaults")
           )
         ),
 
         // QR SHARE
         tab==="share"&&React.createElement("div",{style:{textAlign:"center",paddingTop:10}},
           React.createElement("div",{style:{fontSize:14,color:"#FFFFFF",marginBottom:22,lineHeight:1.7}},"Print and display this QR code on site boards,\ntoolboxes, and safety notice areas."),
-          React.createElement("div",{style:{display:"inline-block",background:"#F0F4F8",borderRadius:18,padding:22,marginBottom:18,border:"3px solid #253550"}},
-            qr?React.createElement("img",{src:qr,width:210,height:210,alt:"QR code"}):React.createElement("div",{style:{width:210,height:210,display:"flex",alignItems:"center",justifyContent:"center",color:"#546580",fontSize:13}},"Generating...")
+          React.createElement("div",{style:{display:"inline-block",background:"#F0F4F8",borderRadius:18,padding:22,marginBottom:18,border:"3px solid #1E3A5F"}},
+            qr?React.createElement("img",{src:qr,width:210,height:210,alt:"QR code"}):React.createElement("div",{style:{width:210,height:210,display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.55)",fontSize:13}},"Generating...")
           ),
           React.createElement("div",{style:{...card,marginBottom:16,textAlign:"left"}},
             React.createElement("div",{style:secT},"Field Form URL"),
-            React.createElement("div",{style:{fontSize:11,color:"#F5A623",wordBreak:"break-all",fontFamily:"monospace",lineHeight:1.7}},window.location.href)
+            React.createElement("div",{style:{fontSize:11,color:"#00C8FF",wordBreak:"break-all",fontFamily:"monospace",lineHeight:1.7}},window.location.href)
           ),
-          React.createElement("button",{style:{width:"100%",maxWidth:300,background:cp?"#00E676":"#F5A623",color:"#000",border:"none",borderRadius:12,padding:"15px",fontSize:15,fontWeight:700,cursor:"pointer",transition:"background 0.3s",fontFamily:"inherit",minHeight:54},onClick:function(){try{navigator.clipboard.writeText(window.location.href);}catch(e){}setCp(true);setTimeout(function(){setCp(false);},2500);}},
+          React.createElement("button",{style:{width:"100%",maxWidth:300,background:cp?"#00E676":"#00C8FF",color:"#000",border:"none",borderRadius:12,padding:"15px",fontSize:15,fontWeight:700,cursor:"pointer",transition:"background 0.3s",fontFamily:"inherit",minHeight:54},onClick:function(){try{navigator.clipboard.writeText(window.location.href);}catch(e){}setCp(true);setTimeout(function(){setCp(false);},2500);}},
             cp?"\u2713 Link Copied":"Copy Link"
           )
         )
@@ -1048,11 +1027,11 @@ function App(){
   }
 
   // ── FIELD FORM ───────────────────────────────────────────────────────
-  return React.createElement("div",{style:{minHeight:"100vh",background:"#080C16",paddingBottom:60}},
+  return React.createElement("div",{style:{minHeight:"100vh",background:"#14162C",paddingBottom:60}},
     OffBar,
     React.createElement(Hdr,{title:"Report Disruption",sub:PROJECT_NAME+" · Field Entry",accent:"#FF1744",right:adminBtn}),
     React.createElement("div",{style:{padding:"16px"}},
-      React.createElement("div",{style:{background:"rgba(245,166,35,0.08)",border:"1px solid rgba(245,166,35,0.3)",borderRadius:10,padding:"12px 16px",marginBottom:22,fontSize:13,color:"#F5A623",lineHeight:1.7}},
+      React.createElement("div",{style:{background:"rgba(0,200,255,0.08)",border:"1px solid rgba(0,200,255,0.3)",borderRadius:10,padding:"12px 16px",marginBottom:22,fontSize:13,color:"#00C8FF",lineHeight:1.7}},
         "* = Mandatory \u00b7 Timestamp auto-recorded \u00b7 Dropdowns support manual entry"
       ),
 
@@ -1084,22 +1063,11 @@ function App(){
           options:actOptions
         }),
         actsLoaded&&actOptions.length>0&&React.createElement("div",{style:{fontSize:11,color:"#FFFFFF",marginTop:5}},actOptions.length+" activities found for "+lv2Code),
-        !actsLoaded&&form.areaLv2&&!actsLoading&&React.createElement("div",{style:{fontSize:11,color:"#8899AA",marginTop:5}},"Type any Activity ID manually — list loads once per session")
+        !actsLoaded&&form.areaLv2&&!actsLoading&&React.createElement("div",{style:{fontSize:11,color:"#7EC8E8",marginTop:5}},"Type any Activity ID manually — list loads once per session")
       ),
 
       React.createElement(Lbl,{label:"Disruption Type",err:err.type,req:true},
         React.createElement(Combo,{id:"type",value:form.type,onChange:function(v){setForm(function(p){return{...p,type:v};});},placeholder:"Select or type disruption type...",options:types,err:err.type})
-      ),
-
-      React.createElement(Lbl,{label:"Severity Level",err:err.severity,req:true},
-        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
-          SEVERITIES.map(function(s){
-            var active=form.severity===s;
-            return React.createElement("button",{key:s,type:"button",onClick:function(){setForm(function(p){return{...p,severity:s};});setErr(function(p){return{...p,severity:undefined};});},
-              style:{padding:"16px 8px",borderRadius:12,border:"2px solid "+(active?SEV[s].c:"#253550"),background:active?SEV[s].bg:"#0A1220",color:active?SEV[s].c:"#FFFFFF",fontWeight:active?700:500,cursor:"pointer",fontSize:15,transition:"all 0.15s",fontFamily:"inherit",minHeight:58}},s);
-          })
-        ),
-        err.severity&&React.createElement("div",{style:{fontSize:12,color:"#FF1744",marginTop:6}},"\u26a0 "+err.severity)
       ),
 
       React.createElement(Lbl,{label:"Date & Time of Incident",err:err.incidentDate,req:true},
@@ -1124,10 +1092,10 @@ function App(){
       ),
 
       React.createElement("button",{onClick:submit,disabled:busy,
-        style:{width:"100%",background:busy?"#1E2E44":"#DC2626",color:busy?"#8899AA":"#FFFFFF",border:"none",borderRadius:12,padding:"18px",fontSize:17,fontWeight:700,cursor:"pointer",letterSpacing:0.5,transition:"all 0.2s",fontFamily:"inherit",minHeight:58,boxShadow:busy?"none":"0 4px 16px rgba(220,38,38,0.35)"}},
+        style:{width:"100%",background:busy?"#08102A":"#0055BB",color:busy?"#4A7A9A":"#FFFFFF",border:"none",borderRadius:12,padding:"18px",fontSize:17,fontWeight:700,cursor:"pointer",letterSpacing:0.5,transition:"all 0.2s",fontFamily:"inherit",minHeight:58,boxShadow:busy?"none":"0 4px 16px rgba(0,85,187,0.45)"}},
         busy?"Submitting...":"Submit Disruption Report"
       ),
-      React.createElement("div",{style:{textAlign:"center",marginTop:16,fontSize:12,color:"#253550"}},"delay.nfsdashboard.com · "+PROJECT_NAME)
+      React.createElement("div",{style:{textAlign:"center",marginTop:16,fontSize:12,color:"#4A7A9A"}},"delay.nfsdashboard.com · "+PROJECT_NAME)
     )
   );
 }
