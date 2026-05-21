@@ -237,6 +237,20 @@ const STA={
 
 // ── HELPERS ───────────────────────────────────────────────────────────
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+// Sequential reference using Firestore atomic transaction — NFS-2026-0001 format
+async function getNextRef(){
+  var year=new Date().getFullYear();
+  var counterRef=db.collection("settings").doc("counter");
+  var nextNum=await db.runTransaction(async function(tx){
+    var doc=await tx.get(counterRef);
+    var current=doc.exists?(doc.data().value||0):0;
+    var next=current+1;
+    tx.set(counterRef,{value:next},{merge:true});
+    return next;
+  });
+  return "NFS-"+year+"-"+String(nextNum).padStart(4,"0");
+}
 function fmtDate(ts){return new Date(ts).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
 function fmtInc(dt){if(!dt)return"—";try{return new Date(dt).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}catch(e){return dt;}}
 function timeAgo(ts){var d=Date.now()-ts,m=Math.floor(d/60000);if(m<1)return"Just now";if(m<60)return m+"m ago";var h=Math.floor(m/60);if(h<24)return h+"h ago";return Math.floor(h/24)+"d ago";}
@@ -254,7 +268,7 @@ function findLv1(val){
 function exportCSV(data){
   var h=["Ref","Badge","Name","Discipline","Lv1 Area","Lv2 Area","Activity ID","Disruption Type","Incident Date","Description","Resources Involved","Impact","Action","Status","Submitted"];
   var rows=data.map(function(d){
-    return[d.id,d.badge,'"'+d.name+'"','"'+d.discipline+'"','"'+(d.areaLv1||"")+'"','"'+(d.areaLv2||"")+'"',d.activityId||"",'"'+d.type+'"','"'+fmtInc(d.incidentDate)+'"','"'+(d.description||"").replace(/"/g,'""')+'"','"'+(d.resources||"").replace(/"/g,'""')+'"','"'+(d.impact||"").replace(/"/g,'""')+'"','"'+(d.action||"").replace(/"/g,'""')+'"',d.status,fmtDate(d.timestamp)];
+    return[d.ref||("LEGACY-"+d.id.slice(-6).toUpperCase()),d.badge,'"'+d.name+'"','"'+d.discipline+'"','"'+(d.areaLv1||"")+'"','"'+(d.areaLv2||"")+'"',d.activityId||"",'"'+d.type+'"','"'+fmtInc(d.incidentDate)+'"','"'+(d.description||"").replace(/"/g,'""')+'"','"'+(d.resources||"").replace(/"/g,'""')+'"','"'+(d.impact||"").replace(/"/g,'""')+'"','"'+(d.action||"").replace(/"/g,'""')+'"',d.status,fmtDate(d.timestamp)];
   });
   var csv=[h,...rows].map(function(r){return r.join(",");}).join("\n");
   var blob=new Blob([csv],{type:"text/csv"});
@@ -426,6 +440,7 @@ function App(){
   var [form,setForm]=useState(blankForm());
   var [err,setErr]=useState({});
   var [busy,setBusy]=useState(false);
+  var [lastRef,setLastRef]=useState("");
 
   // Online
   useEffect(function(){
@@ -538,7 +553,9 @@ function App(){
     if(!validate()||busy)return;
     setBusy(true);
     try{
+      var ref=await getNextRef();
       await db.collection("disruptions").add({
+        ref:ref,
         badge:form.badge.trim(),name:form.name.trim(),discipline:form.discipline.trim(),
         areaLv1:form.areaLv1.trim(),areaLv2:form.areaLv2.trim(),
         activityId:form.activityId.trim(),
@@ -547,6 +564,7 @@ function App(){
         resources:form.resources.trim(),impact:form.impact.trim(),action:form.action.trim(),
         timestamp:Date.now(),status:"Open"
       });
+      setLastRef(ref);
       setForm(blankForm());setErr({});setBusy(false);setView("success");
     }catch(e){alert("Submission failed: "+e.message);setBusy(false);}
   }
@@ -615,7 +633,8 @@ function App(){
       React.createElement("svg",{width:40,height:40,viewBox:"0 0 40 40",fill:"none"},React.createElement("path",{d:"M8 20l9 9 15-15",stroke:"#00E676",strokeWidth:3.5,strokeLinecap:"round",strokeLinejoin:"round"}))
     ),
     React.createElement("div",{style:{fontSize:24,fontWeight:700,color:"#FFFFFF",marginBottom:10}},"Report Submitted"),
-    React.createElement("div",{style:{color:"#7EC8E8",lineHeight:1.8,marginBottom:32,fontSize:15}},"Logged to Firebase and visible\nto the project team in real time."),
+    lastRef&&React.createElement("div",{style:{background:"rgba(0,200,255,0.1)",border:"1px solid rgba(0,200,255,0.3)",borderRadius:10,padding:"10px 24px",marginBottom:12,fontFamily:"monospace",fontSize:18,fontWeight:700,color:"#00C8FF",letterSpacing:1}},lastRef),
+    React.createElement("div",{style:{color:"#7EC8E8",lineHeight:1.8,marginBottom:32,fontSize:14}},"Logged to Firebase and visible\nto the project team in real time."),
     React.createElement("button",{style:{width:"100%",maxWidth:300,background:"#00C8FF",color:"#000",border:"none",borderRadius:12,padding:"16px",fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:54},onClick:function(){setView("form");setForm(blankForm());}},"Submit Another Report"),
     React.createElement("div",{style:{fontSize:12,color:"#4A7A9A",marginTop:14}},"\uD83D\uDD12 Admin access via Google Sign-In only")
   );
@@ -647,7 +666,7 @@ function App(){
     var d=detail;
     return React.createElement("div",{className:"fade",style:{minHeight:"100vh",background:"#14162C",paddingBottom:40}},
       OffBar,
-      React.createElement(Hdr,{title:"Disruption Detail",sub:PROJECT_NAME+" · Admin",onBack:function(){setView("admin");},accent:"#00C8FF"}),
+      React.createElement(Hdr,{title:"Disruption Detail",sub:(d.ref||"NO REF")+" · "+PROJECT_NAME,onBack:function(){setView("admin");},accent:"#00C8FF"}),
       React.createElement("div",{style:{padding:16}},
         React.createElement("div",{style:{...card,marginBottom:12}},
           React.createElement("div",{style:{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}},
@@ -664,7 +683,7 @@ function App(){
         ),
         React.createElement("div",{style:{...card,marginBottom:12}},
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
-            ...[["Badge",d.badge],["Name",d.name],["Discipline",d.discipline],["Ref",d.id.slice(-8).toUpperCase()]].map(function(x){
+            ...[["Badge",d.badge],["Name",d.name],["Discipline",d.discipline],["Ref",d.ref||(d.id.slice(-6).toUpperCase())]].map(function(x){
               return React.createElement("div",{key:x[0]},
                 React.createElement("div",{style:{fontSize:10,color:"#7EC8E8",textTransform:"uppercase",letterSpacing:0.9,marginBottom:5}},x[0]),
                 React.createElement("div",{style:{fontSize:14,color:"#FFFFFF",fontWeight:600}},x[1])
@@ -812,7 +831,7 @@ function App(){
               // Card footer — status + actions
               React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8,borderTop:"1px solid #1E3A5F",flexWrap:"wrap",gap:6}},
                 React.createElement("div",{style:{fontSize:12,color:"#FFFFFF"}},
-                  React.createElement("span",{style:{color:"#00C8FF",fontFamily:"monospace",fontWeight:700}},"#"+d.badge)," · ",d.name
+                  React.createElement("span",{style:{color:"#00C8FF",fontFamily:"monospace",fontWeight:700}},d.ref||("#"+d.badge))," · ",d.name
                 ),
                 React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
                   React.createElement(Pill,{label:d.status,...STA[d.status]}),
